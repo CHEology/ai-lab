@@ -1,6 +1,7 @@
 import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { readWriting, writingTree, buildWriting } from './writing.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
@@ -60,9 +61,10 @@ async function readProjects() {
 }
 
 const projects = await readProjects();
-const catalog = `<ul class="project-list" aria-label="作品">${projects.map((project) =>
+const writing = await readWriting(root);
+const catalog = `<div class="catalogue">${writingTree(writing, { home: true })}<ul class="project-list" aria-label="其他作品">${projects.map((project) =>
   `<li><a href="${escape(project.href)}">${escape(project.title)}</a></li>`
-).join('')}</ul>`;
+).join('')}</ul></div>`;
 
 const template = await readFile(path.join(root, 'site/index.html'), 'utf8');
 for (const marker of ['<!-- CATALOG -->']) {
@@ -77,5 +79,6 @@ for (const project of projects) {
   }
 }
 await writeFile(path.join(output, 'index.html'), template.replace('<!-- CATALOG -->', () => catalog));
+await buildWriting(root, output, writing);
 await writeFile(path.join(output, '.nojekyll'), '');
-console.log(`Built ai-lab: ${projects.length} published experiment(s) → dist/`);
+console.log(`Built ai-lab: ${projects.length} experiment(s), ${writing.entries.length} writing page(s) → dist/`);
