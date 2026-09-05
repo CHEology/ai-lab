@@ -1,0 +1,13 @@
+{
+  "name": "ai-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "尝试和展示用 AI 做的文本、代码、游戏与页面。",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check scripts/build.mjs && node scripts/build.mjs",
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs"
+  }
+}
