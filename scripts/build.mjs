@@ -4,12 +4,6 @@ import path from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
-const categories = [
-  { id: 'text', label: '文本', english: 'TEXT', description: '文字、故事，以及表达的新方式。' },
-  { id: 'code', label: '代码', english: 'CODE', description: '小工具、脚本，把想法变成能用的东西。' },
-  { id: 'game', label: '游戏', english: 'PLAY', description: '可以上手玩的小世界。' },
-  { id: 'web', label: '页面', english: 'WEB', description: '界面、交互，还有浏览器里的各种尝试。' },
-];
 const escape = (value) => String(value).replace(/[&<>"']/g, (char) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 })[char]);
@@ -38,12 +32,11 @@ async function readProjects() {
       throw new Error(`${entry.name}：draft 必须是布尔值`);
     }
     if (project.draft === true) continue;
-    for (const key of ['title', 'description', 'category', 'date']) {
+    for (const key of ['title', 'date']) {
       if (typeof project[key] !== 'string' || !project[key].trim()) {
         throw new Error(`${entry.name} 缺少有效的 ${key}`);
       }
     }
-    if (!categories.some(({ id }) => id === project.category)) throw new Error(`${entry.name}：未知分类`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(project.date) || !Number.isFinite(Date.parse(project.date)) ||
         new Date(project.date).toISOString().slice(0, 10) !== project.date) {
       throw new Error(`${entry.name}：date 必须是有效的 YYYY-MM-DD 日期`);
@@ -67,24 +60,12 @@ async function readProjects() {
 }
 
 const projects = await readProjects();
-const catalog = `<div class="category-grid">${categories.map((category, index) => {
-  const items = projects.filter((project) => project.category === category.id);
-  return `<section class="category" aria-labelledby="category-${category.id}">
-    <div class="category-label"><span>${String(index + 1).padStart(2, '0')} / ${category.english}</span><span>${String(items.length).padStart(2, '0')}</span></div>
-    <h3 id="category-${category.id}">${category.label}</h3>
-    <p class="category-description">${category.description}</p>
-    ${items.length ? `<ul class="project-list">${items.map((project) => `<li>
-      <a class="project-link" href="${escape(project.href)}">
-        <span class="project-meta"><time datetime="${escape(project.date)}">${escape(project.date)}</time>${project.externalUrl ? '<span>外部作品</span>' : ''}</span>
-        <span class="project-title">${escape(project.title)}<span aria-hidden="true">↗</span></span>
-        <span class="project-summary">${escape(project.description)}</span>
-      </a>
-    </li>`).join('')}</ul>` : '<p class="empty-state">暂无作品，留给下一次实验。</p>'}
-  </section>`;
-}).join('')}</div>`;
+const catalog = `<ul class="project-list" aria-label="作品">${projects.map((project) =>
+  `<li><a href="${escape(project.href)}">${escape(project.title)}</a></li>`
+).join('')}</ul>`;
 
 const template = await readFile(path.join(root, 'site/index.html'), 'utf8');
-for (const marker of ['<!-- PROJECT_COUNT -->', '<!-- CATALOG -->']) {
+for (const marker of ['<!-- CATALOG -->']) {
   if (template.split(marker).length !== 2) throw new Error(`首页必须包含且仅包含一个占位符：${marker}`);
 }
 await rm(output, { recursive: true, force: true });
@@ -95,6 +76,6 @@ for (const project of projects) {
     await cp(project.publicDirectory, path.join(output, 'experiments', project.slug), { recursive: true });
   }
 }
-await writeFile(path.join(output, 'index.html'), template.replace('<!-- PROJECT_COUNT -->', () => String(projects.length)).replace('<!-- CATALOG -->', () => catalog));
+await writeFile(path.join(output, 'index.html'), template.replace('<!-- CATALOG -->', () => catalog));
 await writeFile(path.join(output, '.nojekyll'), '');
-console.log(`Built ai-lab: ${projects.length} published experiment(s), ${categories.length} categories → dist/`);
+console.log(`Built ai-lab: ${projects.length} published experiment(s) → dist/`);

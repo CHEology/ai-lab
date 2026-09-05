@@ -7,21 +7,12 @@
 ```json
 {
   "title": "你的作品名称",
-  "description": "用一句话说明这个实验可以看什么或做什么。",
-  "category": "text",
   "date": "2026-09-04",
   "draft": false
 }
 ```
 
-可用分类：
-
-| category | 展示区 |
-| --- | --- |
-| `text` | 文本 |
-| `code` | 代码 |
-| `game` | 游戏 |
-| `web` | 页面 |
+首页使用一份简单的作品名称列表，不分区，也不显示日期或介绍。`date` 只用于从新到旧排序，不需要填写分类。
 
 把可发布的文件放入该实验的 `public/`，入口为 `public/index.html`。文字作品可放在 HTML 页面中，代码作品可提供演示与源码链接，游戏和交互页面可携带自己的 JavaScript、CSS 与素材。
 
@@ -54,8 +45,6 @@
 ```json
 {
   "title": "你的外部作品",
-  "description": "作品介绍。",
-  "category": "web",
   "date": "2026-09-04",
   "externalUrl": "https://example.com/your-project/"
 }
@@ -66,9 +55,9 @@
 ## 草稿与检查
 
 - `draft: true`：不收录到首页，不复制到网站产物。公开仓库里的源码仍然公开。
-- `draft` 省略或设为 `false`：收录并校验资料。作品在分类内按日期从新到旧排列。
-- 运行 `npm run check` 校验分类、日期、链接和本地入口，运行 `npm run dev` 查看首页与作品页面。
+- `draft` 省略或设为 `false`：收录并校验资料。作品按日期从新到旧排列。
+- 运行 `npm run check` 校验名称、日期、链接和本地入口，运行 `npm run dev` 查看首页与作品页面。
 - 本站托管作品只能发布 `public/` 中的静态文件。构建会拒绝该目录中的隐藏文件、符号链接与 `node_modules`。
 - 推送到 `main` 后，GitHub Actions 自动部署。
 
-添加新分类时，更新 `scripts/build.mjs` 的 `categories`，并同步本文档及首页介绍。
+旧资料中的 `category`、`description` 可以保留，但不参与首页展示，也不是必填字段。

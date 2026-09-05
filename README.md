@@ -1,11 +1,11 @@
 # ai-lab
 
-尝试和展示用 AI 做的新鲜玩意儿：文本、代码、游戏、页面，以及更多实验。
+AI 实验作品。
 
 - 网站：https://cheology.github.io/ai-lab/
 - 仓库：https://github.com/CHEology/ai-lab
 
-这是与 Blue Note 分开维护、分开发布的独立网站。当前是初始版本，包含四类作品展示区，尚未收录实验。
+这是与 Blue Note 分开维护、分开发布的独立网站。首页只保留蓝色 logo 和作品名称列表；没有作品时留空。
 
 ## 本地运行
 
@@ -23,11 +23,11 @@ npm run check  # 校验作品资料并构建到 dist/
 
 ## 添加作品
 
-详见 [添加实验](docs/ADDING-EXPERIMENTS.md)。每个实验独占一个目录，既可以放可直接打开的静态作品，也可以链接到独立部署的作品。首页在构建时按分类、日期自动收录。
+详见 [添加实验](docs/ADDING-EXPERIMENTS.md)。每个实验独占一个目录，既可以放可直接打开的静态作品，也可以链接到独立部署的作品。首页在构建时自动收录，按日期从新到旧排列，只显示作品名称。
 
 ```text
 experiments/<slug>/
-  project.json       作品名称、分类、日期和介绍
+  project.json       作品名称与排序日期
   public/            本站托管时，仅此目录会发布
     index.html       作品入口
 site/                首页、样式、图标和 404 页面
