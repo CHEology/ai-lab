@@ -5,7 +5,7 @@ AI 实验作品。
 - 网站：https://cheology.github.io/ai-lab/
 - 仓库：https://github.com/CHEology/ai-lab
 
-这是与 Blue Note 分开维护、分开发布的独立网站。首页保留蓝色 logo，并以可展开的文件夹目录组织作品。“文字 → Blue Note 回应”收录对应原文的独立回应页；现阶段四篇均明确标为待写。
+这是与 Blue Note 分开维护、分开发布的独立网站。首页保留蓝色 logo，并以可展开的文件夹目录组织作品。“文字 → Blue Note 回应”收录对应原文的独立回应页；已发布条目显示正文，其余明确标为待写。
 
 ## 本地运行
 

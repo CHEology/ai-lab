@@ -16,4 +16,5 @@ An independent public GitHub Pages project for AI-assisted text, code, games, an
 - Never place API keys or secrets in frontend files or commit them. Drafts in this public repository are still publicly readable.
 - Keep the shared homepage styles in `site/assets/style.css`. Experiments may have their own appearance and technology.
 - Run `npm run check` before publishing. For new experiments, also check their direct URL and asset paths under `/ai-lab/`.
+- The user has authorized direct publication of requested site and content updates (2026-09-05). After checks pass, commit, push to `main`, and verify deployment and the live page without asking for another publication confirmation. If no byline is supplied, omit it; never invent attribution or block publication to request it. Follow any later explicit instruction to keep work local or in draft.
 - `main` is the deployment branch; use the `codex/` prefix for future feature branches.

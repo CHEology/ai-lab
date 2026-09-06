@@ -29,6 +29,7 @@ export async function readWriting(root) {
   const ids = new Set(), paths = new Set(), entries = [];
   for (const entry of data.entries) {
     required(entry.id, 'id'); required(entry.title, 'title');
+    if (entry.responseTitle !== undefined) required(entry.responseTitle, 'responseTitle');
     if (ids.has(entry.id)) throw new Error('文字 ID 重复'); ids.add(entry.id);
     if (!groups.has(entry.collection)) throw new Error(`${entry.id} 的分组不存在`);
     if (!['pending', 'published', 'draft'].includes(entry.status)) throw new Error(`${entry.id} 的状态无效`);
@@ -45,7 +46,8 @@ export async function readWriting(root) {
     if (entry.status === 'draft') continue;
     let body = '';
     if (entry.status === 'published') {
-      required(entry.body, 'body'); required(entry.byline, 'byline');
+      required(entry.body, 'body');
+      if (entry.byline !== undefined) required(entry.byline, 'byline');
       if (!/^\d{4}-\d{2}-\d{2}$/.test(entry.published || '') || !Number.isFinite(Date.parse(entry.published)) || new Date(entry.published).toISOString().slice(0, 10) !== entry.published) throw new Error('已发布文字必须有真实有效的发布日期');
       if (!/^bodies\/.+\.md$/.test(entry.body)) throw new Error('正文必须是 bodies/ 中的 Markdown');
       const bodyPath = await realpath(path.resolve(folder, entry.body));
@@ -93,9 +95,9 @@ export async function buildWriting(root, output, data) {
   await mkdir(path.join(output, 'writing'), { recursive: true });
   await writeFile(path.join(output, 'writing/index.html'), index);
   for (const entry of data.entries) {
-    const title = entry.source ? `回应《${entry.title}》` : entry.title;
+    const title = entry.responseTitle ?? (entry.source ? `回应《${entry.title}》` : entry.title);
     const body = entry.status === 'pending' ? `<p class="writing-pending">${entry.source ? '回应' : '文字'}尚未发布。</p>` : entry.bodyHTML;
-    const metadata = entry.status === 'published' ? `<p class="writing-meta">${escape(entry.byline)} · <time datetime="${escape(entry.published)}">${escape(entry.published)}</time></p>` : '';
+    const metadata = entry.status === 'published' ? `<p class="writing-meta">${entry.byline ? `${escape(entry.byline)} · ` : ''}<time datetime="${escape(entry.published)}">${escape(entry.published)}</time></p>` : '';
     const back = entry.source ? `<footer class="writing-source"><a href="${escape(entry.source.url)}" aria-label="阅读 Blue Note 原文《${escape(entry.source.title)}》">Blue Note · 原文<span class="source-arrow" aria-hidden="true">↗</span></a></footer>` : '';
     const html = document({ rootURL: '../../../', title, route: entry.href, pending: entry.status === 'pending', breadcrumbs: `<a href="../../">文字</a><span class="separator" aria-hidden="true">/</span><span>${escape(entry.groupTitle)}</span>`, content: `<article class="reading"><h1 class="page-title">${escape(title)}</h1>${metadata}<div class="writing-body">${body}</div>${back}</article>` });
     await mkdir(path.join(output, entry.diskPath), { recursive: true });
