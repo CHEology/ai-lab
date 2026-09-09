@@ -1,11 +1,27 @@
 import { Marked } from 'marked';
 import markedFootnote from 'marked-footnote';
+import { writingMath } from './math.mjs';
 
 // A fresh parser per article keeps reference numbering and definitions isolated.
-export function renderWriting(markdown) {
+export function renderWriting(markdown, { toc = false } = {}) {
   const parser = new Marked(markedFootnote({
     description: '注释', headingClass: '', backRefLabel: '返回正文',
-  }));
+  }), writingMath());
+  const headings = [];
+  const headingIds = new Set();
+  let inAppendix = false;
+  if (toc) parser.use({ renderer: { heading({ tokens, depth, text }) {
+    const content = this.parser.parseInline(tokens);
+    if (depth === 2 && text === '延伸阅读') inAppendix = true;
+    if (depth !== 2 || inAppendix) return `<h${depth}>${content}</h${depth}>\n`;
+    const base = `section-${text.normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') || 'heading'}`;
+    let id = base;
+    for (let suffix = 2; headingIds.has(id); suffix++) id = `${base}-${suffix}`;
+    headingIds.add(id);
+    // Reuse escaped rendered text, without nested links or formatting in the TOC.
+    headings.push({ id, label: content.replace(/<[^>]*>/g, '') });
+    return `<h2 id="${id}" tabindex="-1">${content}</h2>\n`;
+  } } });
   const checked = new Set();
   parser.use({ walkTokens(token) {
     if (token.type === 'heading' && token.depth === 1) throw new Error('正文不要重复 H1；标题由元数据生成');
@@ -45,7 +61,9 @@ export function renderWriting(markdown) {
   const prose = notesAt < 0 ? html : html.slice(0, notesAt);
   const appendix = prose.split('<h2>延伸阅读</h2>\n');
   if (appendix.length > 2) throw new Error('延伸阅读只能出现一次');
-  return appendix.length === 2
+  const body = appendix.length === 2
     ? `${appendix[0]}${notes}<section class="further-reading" aria-labelledby="further-reading-label">\n<h2 id="further-reading-label">延伸阅读</h2>\n${appendix[1]}</section>\n`
     : prose + notes;
+  const contents = headings.length < 2 ? '' : `<details class="reading-toc"><summary>目录</summary><nav aria-label="文章目录"><ol>${headings.map(({ id, label }) => `<li><a href="#${encodeURIComponent(id)}">${label}</a></li>`).join('')}</ol></nav></details>\n`;
+  return contents + body;
 }

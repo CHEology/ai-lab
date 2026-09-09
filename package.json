@@ -13,6 +13,7 @@
     "dev": "node scripts/build.mjs && node scripts/serve.mjs"
   },
   "dependencies": {
+    "katex": "0.18.7",
     "marked": "15.0.12",
     "marked-footnote": "1.4.0"
   }

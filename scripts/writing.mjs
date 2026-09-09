@@ -30,6 +30,7 @@ export async function readWriting(root) {
   for (const entry of data.entries) {
     required(entry.id, 'id'); required(entry.title, 'title');
     if (entry.responseTitle !== undefined) required(entry.responseTitle, 'responseTitle');
+    if (entry.toc !== undefined && typeof entry.toc !== 'boolean') throw new Error('toc 必须是布尔值');
     if (ids.has(entry.id)) throw new Error('文字 ID 重复'); ids.add(entry.id);
     if (!groups.has(entry.collection)) throw new Error(`${entry.id} 的分组不存在`);
     if (!['pending', 'published', 'draft'].includes(entry.status)) throw new Error(`${entry.id} 的状态无效`);
@@ -55,7 +56,7 @@ export async function readWriting(root) {
       if (!bodyPath.startsWith(bodyRoot + path.sep)) throw new Error('正文路径越界');
       const markdown = await readFile(bodyPath, 'utf8');
       if (!markdown.trim()) throw new Error('已发布文字不能是空正文');
-      body = renderWriting(markdown);
+      body = renderWriting(markdown, { toc: entry.toc });
     } else if (entry.body || entry.byline || entry.published) {
       throw new Error('待写页面不能携带正文、署名或发布日期');
     }

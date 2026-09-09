@@ -1,10 +1,12 @@
 # 添加文字与 Blue Note 回应
 
-编辑前先读 [文字排版与引用规范](WRITING-DESIGN.md)；它是 agent / AI 处理正文、标题、引用和注释的执行标准。首次运行 `npm ci`，之后 `npm run dev` 预览。`marked` 与 `marked-footnote` 是锁定版本的构建依赖；浏览器不请求解析器、AI API 或数据库。
+编辑前先读 [文字排版与引用规范](WRITING-DESIGN.md)；它是 agent / AI 处理正文、标题、引用和注释的执行标准。首次运行 `npm ci`，之后 `npm run dev` 预览。`marked`、`marked-footnote` 与 `katex` 是锁定版本的构建依赖；浏览器不请求解析器、AI API 或数据库。
 
 在 `writing/entries.json` 的 `collections` 添加有实际作品的分组，再在 `entries` 登记条目。数组顺序就是目录顺序。每个条目提供唯一 `id`、`title`、`collection` 和 `status`。回应还需要 `source.title` 与 `source.url`，标题必须相同。
 
 回应有自己的标题时，填写可选的 `responseTitle`，它用于阅读页 H1 和浏览器标题。`title` 仍保留原文标题，供目录与固定 URL 使用；不把回应标题重复写进 Markdown 正文。
+
+长文在作者允许时可填写 `toc: true`：正文前生成默认收起的简洁目录，只列主要 H2。公式用 `$...$`，独立公式起止 `$$` 各占一行；构建器输出原生 MathML。具体格式见文字规范第 4.3–4.4 节。
 
 `pending` 条目不填写正文、作者署名或发布日期。待写页面可以通过 `/ai-lab/writing/bluenote/修图/` 等原标题地址访问，且不允许搜索引擎索引。
 

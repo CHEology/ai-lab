@@ -23,8 +23,12 @@
     {
       "id": "bluenote-notes",
       "title": "0902 - 随想",
+      "responseTitle": "规律还不是操作说明",
       "collection": "bluenote",
-      "status": "pending",
+      "status": "published",
+      "body": "bodies/规律还不是操作说明.md",
+      "published": "2026-09-08",
+      "toc": true,
       "source": { "title": "0902 - 随想", "url": "https://cheology.github.io/bluenote/2026/09/02/近期随想/" }
     },
     {

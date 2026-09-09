@@ -38,3 +38,33 @@ test('literal syntax in code remains literal and article note state never leaks'
   assert(!next.includes('footnote-real'));
   assert(!renderWriting('不需要注释的短文。').includes('footnotes'));
 });
+
+test('opt-in contents use unique heading targets, exclude appendices, and stay collapsed', () => {
+  const source = '引言。\n\n## 同一个标题\n\n正文。[^note]\n\n## 同一个标题\n\n另一节。\n\n[^note]: 依据。\n\n## 延伸阅读\n\n另一篇。';
+  const html = renderWriting(source, { toc: true });
+  assert.match(html, /^<details class="reading-toc"><summary>目录<\/summary>/);
+  const nav = html.match(/<nav aria-label="文章目录">([\s\S]*?)<\/nav>/)[1];
+  assert.equal([...nav.matchAll(/<li>/g)].length, 2);
+  for (const [, target] of nav.matchAll(/href="#([^"]+)"/g)) {
+    assert(html.includes(`id="${decodeURIComponent(target)}" tabindex="-1"`));
+  }
+  assert(!nav.includes('延伸阅读'));
+  assert(html.indexOf('class="footnotes"') < html.indexOf('class="further-reading"'));
+  assert(!renderWriting(source).includes('reading-toc'));
+  assert(!renderWriting('## 只有一节\n\n正文。', { toc: true }).includes('reading-toc'));
+  assert(!renderWriting('另一篇。', { toc: true }).includes('reading-toc'));
+});
+
+test('math renders accessible fractions and exponents without scripts or changing code', () => {
+  const html = renderWriting('增长 $B\\propto M^{2/3}$。[^math]\n\n$$\nY=cN^\\beta,\\qquad \\frac{Y}{N}=cN^{\\beta-1}\n$$\n\n[^math]: 变量 $M$。');
+  assert.equal([...html.matchAll(/<math\b/g)].length, 3);
+  assert.match(html, /<mfrac>/);
+  assert.match(html, /<msup>/);
+  assert.match(html, /<math[^>]*display="block"/);
+  assert(!/<script|<link|\$/.test(html));
+  const literal = renderWriting('`$M$`\n\n```tex\n$M$\n```\n\n价格 \\$5 和 \\$10。');
+  assert(!literal.includes('<math'));
+  assert(literal.includes('$5 和 $10'));
+  assert.throws(() => renderWriting('$\\notARealCommand{x}$'), /Undefined control sequence/);
+  assert.throws(() => renderWriting('$x^{2$'), /ParseError/);
+});
