@@ -51,6 +51,7 @@ test('opt-in contents use unique heading targets, exclude appendices, and stay c
   assert(!nav.includes('延伸阅读'));
   assert(html.indexOf('class="footnotes"') < html.indexOf('class="further-reading"'));
   assert(!renderWriting(source).includes('reading-toc'));
+  assert.equal(renderWriting(source, { toc: false }), html.replace(/^<details\b[\s\S]*?<\/details>\n/, ''));
   assert(!renderWriting('## 只有一节\n\n正文。', { toc: true }).includes('reading-toc'));
   assert(!renderWriting('另一篇。', { toc: true }).includes('reading-toc'));
 });

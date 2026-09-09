@@ -10,7 +10,7 @@ export function renderWriting(markdown, { toc = false } = {}) {
   const headings = [];
   const headingIds = new Set();
   let inAppendix = false;
-  if (toc) parser.use({ renderer: { heading({ tokens, depth, text }) {
+  parser.use({ renderer: { heading({ tokens, depth, text }) {
     const content = this.parser.parseInline(tokens);
     if (depth === 2 && text === '延伸阅读') inAppendix = true;
     if (depth !== 2 || inAppendix) return `<h${depth}>${content}</h${depth}>\n`;
@@ -64,6 +64,6 @@ export function renderWriting(markdown, { toc = false } = {}) {
   const body = appendix.length === 2
     ? `${appendix[0]}${notes}<section class="further-reading" aria-labelledby="further-reading-label">\n<h2 id="further-reading-label">延伸阅读</h2>\n${appendix[1]}</section>\n`
     : prose + notes;
-  const contents = headings.length < 2 ? '' : `<details class="reading-toc"><summary>目录</summary><nav aria-label="文章目录"><ol>${headings.map(({ id, label }) => `<li><a href="#${encodeURIComponent(id)}">${label}</a></li>`).join('')}</ol></nav></details>\n`;
+  const contents = !toc || headings.length < 2 ? '' : `<details class="reading-toc"><summary>目录</summary><nav aria-label="文章目录"><ol>${headings.map(({ id, label }) => `<li><a href="#${encodeURIComponent(id)}">${label}</a></li>`).join('')}</ol></nav></details>\n`;
   return contents + body;
 }
