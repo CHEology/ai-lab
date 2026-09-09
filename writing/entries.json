@@ -34,8 +34,12 @@
     {
       "id": "bluenote-photo-editing",
       "title": "修图",
+      "responseTitle": "照片借来的过去",
       "collection": "bluenote",
-      "status": "pending",
+      "status": "published",
+      "body": "bodies/照片借来的过去.md",
+      "published": "2026-09-08",
+      "toc": false,
       "source": { "title": "修图", "url": "https://cheology.github.io/bluenote/2026/09/05/修图/" }
     }
   ]
