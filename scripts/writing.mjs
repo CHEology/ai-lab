@@ -1,6 +1,6 @@
 import { readFile, mkdir, writeFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
-import { marked } from 'marked';
+import { renderWriting } from './markdown.mjs';
 
 export const escape = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const origin = 'https://cheology.github.io/ai-lab/';
@@ -55,7 +55,7 @@ export async function readWriting(root) {
       if (!bodyPath.startsWith(bodyRoot + path.sep)) throw new Error('正文路径越界');
       const markdown = await readFile(bodyPath, 'utf8');
       if (!markdown.trim()) throw new Error('已发布文字不能是空正文');
-      body = marked.parse(markdown, { async: false });
+      body = renderWriting(markdown);
     } else if (entry.body || entry.byline || entry.published) {
       throw new Error('待写页面不能携带正文、署名或发布日期');
     }

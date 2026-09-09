@@ -23,7 +23,7 @@ npm run check  # 校验作品资料并构建到 dist/
 
 ## 添加作品
 
-文字与回应见 [添加文字](docs/ADDING-WRITING.md)，视觉规范见 [设计规范](docs/DESIGN.md)。文字页采用原标题路径，例如 `/ai-lab/writing/bluenote/修图/`。
+编辑文字前先读 [文字排版与引用规范](docs/WRITING-DESIGN.md)（agent / AI 必读），操作步骤见 [添加文字](docs/ADDING-WRITING.md)，全站视觉见 [设计规范](docs/DESIGN.md)。文字页采用原标题路径，例如 `/ai-lab/writing/bluenote/修图/`。
 
 详见 [添加实验](docs/ADDING-EXPERIMENTS.md)。每个实验独占一个目录，既可以放可直接打开的静态作品，也可以链接到独立部署的作品。首页在构建时自动收录，按日期从新到旧排列，只显示作品名称。
 

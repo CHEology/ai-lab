@@ -67,11 +67,32 @@ h1 { display: flex; align-items: baseline; margin: 0 0 clamp(2.5rem, 7vw, 5rem);
 .writing-body { font-size: 1.0625rem; line-height: 1.78; overflow-wrap: anywhere; }
 .writing-body p { margin: 0 0 1.15em; }
 .writing-body h2, .writing-body h3 { font-weight: 400; line-height: 1.4; margin: 2em 0 1em; }
+.writing-body h2 { font-size: 1.375rem; }
+.writing-body h3 { font-size: 1.125rem; }
 .writing-body a { color: var(--link); }
+.writing-body ul, .writing-body ol { padding-left: 1.5em; margin: 0 0 1.15em; }
+.writing-body li + li { margin-top: .5em; }
 .writing-body img { display: block; max-width: 100%; height: auto; }
 .writing-body pre, .writing-body table { overflow-x: auto; }
+.writing-body pre { padding: 1rem; border: 1px solid var(--line); font-size: .875rem; line-height: 1.65; }
 .writing-body table { display: block; }
 .writing-body blockquote { border-left: 1px solid var(--line); margin: 1.5rem 0; padding-left: 1.25rem; }
+.writing-body hr { width: 4rem; margin: 2.5rem 0; border: 0; border-top: 1px solid var(--line); }
+
+/* References remain in the sentence flow without increasing its line height. */
+.writing-body sup { position: relative; top: -.45em; vertical-align: baseline; font-size: .7em; line-height: 0; }
+.writing-body a[data-footnote-ref] { display: inline-block; min-width: 24px; padding: 6px 4px; text-align: center; font-family: var(--sans); line-height: 12px; text-indent: 0; text-decoration: none; scroll-margin-top: 6rem; }
+.writing-body a[data-footnote-ref]:hover { text-decoration: underline; }
+.writing-body a[data-footnote-ref]:target { outline: 1px solid var(--link); outline-offset: 2px; }
+.footnotes { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: .9375rem; line-height: 1.75; }
+.writing-body .footnotes h2, .writing-body .further-reading h2 { margin: 0 0 1.25rem; font-family: var(--sans); font-size: 1rem; font-weight: 500; }
+.footnotes li { padding-left: .25rem; scroll-margin-top: 2rem; }
+.footnotes li + li { margin-top: 1rem; }
+.footnotes li::marker { color: var(--muted); font-family: var(--sans); font-size: .8125rem; }
+.footnotes li:target { outline: 1px solid var(--line); outline-offset: .5rem; }
+.footnotes p { margin-bottom: .5rem; }
+.writing-body a[data-footnote-backref] { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; min-height: 28px; font-family: var(--sans); text-decoration: none; }
+.further-reading { margin-top: 2.5rem; font-size: .9375rem; line-height: 1.75; }
 .writing-meta { margin: -1.25rem 0 2.5rem; color: var(--muted); font: .8125rem/1.6 var(--sans); }
 .writing-pending { color: var(--muted); padding-block: .5rem 2rem; }
 .writing-source { margin-top: 2.5rem; font-size: .875rem; line-height: 1.6; }
