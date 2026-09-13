@@ -62,7 +62,19 @@ async function readProjects() {
 
 const projects = await readProjects();
 const writing = await readWriting(root);
-const catalog = `<div class="catalogue">${writingTree(writing, { home: true })}<ul class="project-list" aria-label="其他作品">${projects.map((project) =>
+const folderIcon = '<svg class="directory-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 7V5.5A1.5 1.5 0 0 1 4.5 4H9l2 3h8.5A1.5 1.5 0 0 1 21 8.5v10a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5V7Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>';
+const ideasTree = `<ul class="directory-tree" aria-label="想法目录">
+  <li><details class="directory-folder" open>
+    <summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">想法</span></summary>
+    <ul class="directory-children">
+      <li><details class="directory-folder">
+        <summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">熄灯狂想</span></summary>
+        <ul class="directory-children"></ul>
+      </details></li>
+    </ul>
+  </details></li>
+</ul>`;
+const catalog = `<div class="catalogue">${writingTree(writing, { home: true })}${ideasTree}<ul class="project-list" aria-label="其他作品">${projects.map((project) =>
   `<li><a href="${escape(project.href)}">${escape(project.title)}</a></li>`
 ).join('')}</ul></div>`;
 
