@@ -78,7 +78,7 @@ export function writingTree(data, { prefix = './', home = false } = {}) {
   if (!groups) return '';
   const tree = `<ul class="directory-tree" aria-label="文字目录">${groups}</ul>`;
   if (!home) return tree;
-  return `<ul class="directory-tree" aria-label="作品目录"><li><details class="directory-folder" open><summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">文字</span><a class="directory-open" href="./writing/" aria-label="打开文字目录页">目录 ↗</a></summary><div class="directory-children">${tree}</div></details></li></ul>`;
+  return `<ul class="directory-tree" aria-label="作品目录"><li><details class="directory-folder" open><summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">文字</span></summary><div class="directory-children">${tree}</div></details></li></ul>`;
 }
 
 export async function buildWriting(root, output, data) {
