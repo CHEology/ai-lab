@@ -14,6 +14,8 @@
 
 首页采用统一目录：文字归入可展开的「文字」文件夹，实验继续显示为顶层作品链接，不显示日期或介绍。`date` 只用于实验从新到旧排序，不需要填写分类。AI 文字及 Blue Note 回应的添加方式见 [添加文字](./ADDING-WRITING.md)。
 
+收录在「想法 → 熄灯狂想」中的实验填写 `"folder": "lights-out"`，仅在该文件夹内展示，不重复列在顶层。实验仍保存在 `experiments/<slug>/public/`，沿用独立实验地址。
+
 把可发布的文件放入该实验的 `public/`，入口为 `public/index.html`。文字作品可放在 HTML 页面中，代码作品可提供演示与源码链接，游戏和交互页面可携带自己的 JavaScript、CSS 与素材。
 
 例如 `experiments/word-play/public/index.html`：
