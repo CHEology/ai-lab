@@ -98,7 +98,6 @@
         <div class="tree-heading"><h2 id="silver-title">银线 · 刻纹</h2><span class="orientation" aria-live="polite">冠 · 向共同起点回溯</span></div>
         <div class="controls" role="group" aria-label="银线刻纹的观看控制">
           <button type="button" data-action="zoom-out" aria-label="缩小第一棵树">−</button>
-          <button type="button" data-action="reset" aria-label="第一棵树恢复全貌与居中">全貌</button>
           <button type="button" data-action="zoom-in" aria-label="放大第一棵树">＋</button>
           <button type="button" data-action="pan" aria-label="移动第一棵树" aria-pressed="false">移动</button>
           <button type="button" class="flip" data-action="flip" aria-label="第一棵树翻转为根系"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
@@ -120,7 +119,6 @@
         <div class="tree-heading"><h2 id="open-title">留白 · 枝影</h2><span class="orientation" aria-live="polite">冠 · 向共同起点回溯</span></div>
         <div class="controls" role="group" aria-label="留白枝影的观看控制">
           <button type="button" data-action="zoom-out" aria-label="缩小第二棵树">−</button>
-          <button type="button" data-action="reset" aria-label="第二棵树恢复全貌与居中">全貌</button>
           <button type="button" data-action="zoom-in" aria-label="放大第二棵树">＋</button>
           <button type="button" data-action="pan" aria-label="移动第二棵树" aria-pressed="false">移动</button>
           <button type="button" class="flip" data-action="flip" aria-label="第二棵树翻转为根系"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
@@ -180,10 +178,12 @@
       }
     };
 
+    let activeTree=null;
     class TreeView {
       constructor(section, index) {
         this.section=section; this.ordinal=index===0?'第一棵树':'第二棵树';
         this.stage=section.querySelector('.stage'); this.plane=section.querySelector('.plane');
+        this.toolbar=section.querySelector('.toolbar');
         this.crown=section.querySelector('.crown'); this.route=section.querySelector('.route');
         this.routeGeometry=section.querySelector('.route-geometry');
         this.phases=[...section.querySelectorAll('.phase')].map(element=>({element,geometry:null,size:1254}));
@@ -192,7 +192,7 @@
         for(const b of section.querySelectorAll('[data-action]')) this.buttons[b.dataset.action]=b;
         this.angle=0; this.zoom=1; this.pan={x:0,y:0}; this.panMode=false;
         this.selected=-1; this.drag=null; this.animation=0; this.blockClickUntil=0;
-        this.width=1; this.height=1;
+        this.width=1; this.height=1; this.minZoom=.6;
         this.structure=structures[section.dataset.tree];
         this.markers=[{point:this.structure.base,label:'共同起点'},...this.structure.routes.map((r,i)=>({...r,label:`分岔 ${String(i+1).padStart(2,'0')}`}))];
         this.createNodes();
@@ -207,7 +207,6 @@
         this.buttons.flip.addEventListener('click',()=>this.flip());
         this.buttons['zoom-in'].addEventListener('click',()=>this.setZoom(this.zoom*1.35));
         this.buttons['zoom-out'].addEventListener('click',()=>this.setZoom(this.zoom/1.35));
-        this.buttons.reset.addEventListener('click',()=>{this.pan={x:0,y:0};this.setPanMode(false);this.setZoom(1);});
         this.buttons.pan.addEventListener('click',()=>this.setPanMode(!this.panMode));
         this.stage.addEventListener('pointerdown',e=>this.pointerDown(e));
         this.stage.addEventListener('pointermove',e=>this.pointerMove(e));
@@ -219,6 +218,9 @@
         },true);
         this.stage.addEventListener('keydown',e=>this.keyDown(e));
         this.resizeObserver=new ResizeObserver(()=>this.resize()); this.resizeObserver.observe(this.stage);
+        section.addEventListener('pointerdown',()=>{activeTree=this;},{passive:true});
+        section.addEventListener('focusin',()=>{activeTree=this;});
+        window.addEventListener('resize',()=>this.resize());
         this.resize();
       }
       async loadVector(phase) {
@@ -301,17 +303,42 @@
           m.button.setAttribute('aria-pressed',String(i===this.selected));
         }
         this.buttons['zoom-in'].disabled=this.zoom>=12;
-        this.buttons['zoom-out'].disabled=this.zoom<=.6;
+        this.buttons['zoom-out'].disabled=this.atMinimum();
+        this.buttons.pan.disabled=this.atMinimum();
       }
+      atMinimum() {return this.zoom<=this.minZoom+.0001;}
       resize() {
-        const b=this.stage.getBoundingClientRect();this.width=b.width;this.height=b.height;this.clampPan();this.render();
+        const wasMinimum=this.atMinimum(),b=this.stage.getBoundingClientRect();
+        this.width=b.width;this.height=b.height;
+        const available=Math.max(1,window.innerHeight-this.toolbar.getBoundingClientRect().height-48);
+        // Reserve the rotating square's diagonal, so even a mid-turn tree fits.
+        this.minZoom=Math.min(.6,available/(this.width*Math.SQRT2));
+        this.zoom=wasMinimum?this.minZoom:clamp(this.zoom,this.minZoom,12);
+        this.clampPan();this.render();
+        if(wasMinimum&&activeTree===this)this.frameMinimum(false);
       }
       clampPan() {
+        if(this.atMinimum()){this.pan={x:0,y:0};return;}
         const extra=Math.max(0,this.zoom-1)/2+.15;
         this.pan.x=clamp(this.pan.x,-this.width*extra,this.width*extra);
         this.pan.y=clamp(this.pan.y,-this.height*extra,this.height*extra);
       }
-      setZoom(value) {this.zoom=clamp(value,.6,12);this.clampPan();this.render();}
+      setZoom(value) {
+        activeTree=this;
+        this.zoom=clamp(value,this.minZoom,12);
+        if(this.atMinimum())this.setPanMode(false);
+        this.clampPan();this.render();
+        if(this.atMinimum())this.frameMinimum(true);
+      }
+      frameMinimum(animate) {
+        const stage=this.stage.getBoundingClientRect(),section=this.section.getBoundingClientRect();
+        const toolbarHeight=this.toolbar.getBoundingClientRect().height;
+        const center=toolbarHeight+(window.innerHeight-toolbarHeight)/2;
+        // The large canvas stays in the long page; center its small drawing in
+        // the visible area below the sticky toolbar, not in the off-screen page.
+        const top=window.scrollY+Math.max(section.top,stage.top+stage.height/2-center);
+        window.scrollTo({top,behavior:animate&&!motion.matches?'smooth':'instant'});
+      }
       setPanMode(value) {
         this.panMode=value;this.stage.dataset.pan=String(value);this.buttons.pan.setAttribute('aria-pressed',String(value));
         this.hint.textContent=value?'拖拽移动 · 再点「移动」恢复拖拽翻转':'拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯';
@@ -335,6 +362,8 @@
       }
       flip(direction=1) {
         if(this.animation||this.drag)return;
+        activeTree=this;
+        if(this.atMinimum())this.frameMinimum(true);
         this.settle((Math.round(this.angle/Math.PI)+direction)*Math.PI,1600);
       }
       pointerDown(e) {
@@ -380,7 +409,7 @@
         if(e.target!==this.stage)return;
         const actions={'ArrowLeft':()=>this.flip(-1),'ArrowRight':()=>this.flip(1),' ':()=>this.flip(),'Enter':()=>this.flip(),
           '+':()=>this.setZoom(this.zoom*1.35),'=':()=>this.setZoom(this.zoom*1.35),'-':()=>this.setZoom(this.zoom/1.35),
-          'Home':()=>{this.pan={x:0,y:0};this.setZoom(1);},'Escape':()=>{this.select(-1);this.setPanMode(false);}};
+          'Home':()=>this.setZoom(this.minZoom),'Escape':()=>{this.select(-1);this.setPanMode(false);}};
         if(actions[e.key]){e.preventDefault();actions[e.key]();}
       }
     }

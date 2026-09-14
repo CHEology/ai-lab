@@ -33,6 +33,12 @@
 
 新增针对页面实际控制器的行为测试：恒定倍率、平滑起止、中点连续、重复操作防打断、轻拖回位、明确拖动翻面、反向翻面、取消手势、单次翻面限制、窄屏门槛、12 倍门槛、平移、减少动态效果偏好。浏览器另外检查两棵树的短拖与按钮翻面，并在约 1.82 倍放大下检查直接拖拽及恒定比例。
 
+## 最小倍率与可见范围
+
+移除两棵树的「全貌」按钮。缩小下限根据窗口高度、工具栏高度和旋转对角线计算，缩至下限时清除平移并将树的中心移到工具栏下方的可见区域。最小倍率暂不允许平移，放大后恢复；Home 键使用同一最小视图。最小视图中点击翻转也保持居中。画布继续保留原来的大幅尺寸和长页面，窗口宽高变化后自动调整正在查看的最小视图。
+
+浏览器检查了 1280 × 720、390 × 844 以及从窄屏切换为 793 × 500 的布局：完整树形位于工具栏与窗口底部之间，窄屏无横向溢出。行为测试覆盖最小倍率、清除平移、重新放大，以及窗口变化导致页面重排时仍保持当前树形完整可见。
+
 ## 第一棵树的融合提示词
 
 Edit the first reference tree into the FINAL flat white-line tree illustration for a website. Reference image 1 is the exact composition and tree anatomy to preserve. Reference image 2 supplies only its fine distressed broken engraved line texture. Fuse the AIRY, spacious delicate branching of image 1 with the refined interrupted bark strokes and fine textured crown marks of image 2. Keep the same broad grand mature-tree proportions and silhouette as image 1, no thicker trunk. Keep the original black gaps and elegant naturally asymmetric branches. A very subtle luminous white ink edge, no atmospheric glow. Strictly TWO DIMENSIONAL white line drawing on an opaque pure black background. Flat line grain, no modeled bark or cylindrical shading, no realistic metal, no photographic foliage. Foliage remains tiny abstract curved and broken marks, not larger literal leaf icons. No 3D, no gradients, no gray fill or solid foliage masses. Whole tree fits in the square image, centered exactly like the first reference. No text, frame or extra objects. Preserve every major branch junction and its position from reference 1. Fine detailed final artwork.
