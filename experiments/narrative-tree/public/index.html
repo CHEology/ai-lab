@@ -4,71 +4,83 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#080808">
+  <meta name="theme-color" content="#000000">
   <title>根与冠 · ai-lab</title>
   <link rel="canonical" href="https://cheology.github.io/ai-lab/experiments/narrative-tree/">
   <style>
-    :root { color-scheme: dark; --paper: #080808; --ink: #e2e2e2; --muted: #999; --rule: #303030; }
+    :root { color-scheme: dark; --paper: #000; --ink: #e2e2e2; --muted: #999; --rule: #282828; }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
     button, summary, .meta, .toolbar, .caption, .node, .source-actions { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     button, a, summary { -webkit-tap-highlight-color: transparent; }
     button { color: inherit; font: inherit; cursor: pointer; }
-    :focus-visible { outline: 1px solid #fff; outline-offset: 5px; }
-    a { color: inherit; text-underline-offset: .25em; text-decoration-color: #666; }
-    a:hover { text-decoration-color: #fff; }
-    .intro { width: min(100% - 48px, 640px); margin: 0 auto; padding: 110px 0 68px; font: 17px/1.9 Charter, "Songti SC", "Noto Serif CJK SC", STSong, Georgia, serif; }
+    :focus-visible { outline: 1px solid #fff; outline-offset: 4px; }
+    a { color: inherit; text-underline-offset: .25em; }
+    .intro { width: min(100% - 48px, 640px); margin: 0 auto; padding: 110px 0 88px; font: 17px/1.9 Charter, "Songti SC", "Noto Serif CJK SC", STSong, Georgia, serif; }
     h1 { font-size: clamp(36px, 5vw, 48px); line-height: 1.35; font-weight: 400; letter-spacing: .16em; margin: 0 0 18px; }
     .meta { font-size: 12px; color: var(--muted); letter-spacing: .035em; margin: 0 0 40px; }
     .intro p:not(.meta) { margin: 0 0 1.15em; }
     .intro p:last-child { margin-bottom: 0; }
-    .experiment { width: min(100% - 64px, 1320px); margin: 0 auto; }
-    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; border-top: 1px solid var(--rule); }
-    .orientation { font-size: 14px; letter-spacing: .08em; font-weight: 400; margin: 0; }
+    /* Each tree has its full, square drawing space. Its height is not tied to
+       the viewport; the document continues vertically into the second tree. */
+    .experiment { width: calc(100% - 64px); margin: 0 auto 130px; }
+    .toolbar { position: sticky; top: 0; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 80px; border-top: 1px solid var(--rule); background: #000e; backdrop-filter: blur(12px); }
+    .tree-heading { display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; }
+    .tree-heading h2 { font: 400 18px/1.5 Charter, "Songti SC", STSong, Georgia, serif; letter-spacing: .12em; margin: 0; }
+    .orientation { font-size: 12px; color: var(--muted); }
     .controls { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
-    .controls button { border: 1px solid transparent; min-width: 44px; height: 44px; background: transparent; border-radius: 2px; font-size: 15px; white-space: nowrap; flex-shrink: 0; }
-    .controls button:hover { border-color: #555; background: #141414; }
+    .controls button { border: 1px solid transparent; min-width: 44px; min-height: 44px; padding: 0 10px; background: transparent; font-size: 13px; white-space: nowrap; }
+    .controls button:hover { border-color: #555; background: #131313; }
     .controls button:disabled { opacity: .3; cursor: default; }
-    #flip { display: flex; align-items: center; gap: 9px; margin-left: 12px; padding: 0 15px; border-color: #505050; }
-    #flip svg { width: 17px; height: 17px; }
-    .stage { position: relative; width: 100%; aspect-ratio: 1.12; overflow: hidden; isolation: isolate; }
-    canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
-    .stage.dragging, .stage.dragging canvas, .stage.dragging .node { cursor: grabbing; }
-    .nodes { position: absolute; inset: 0; pointer-events: none; }
-    .node { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px; background: none; border: 0; padding: 0; pointer-events: auto; border-radius: 50%; }
-    .node::before { content: ""; position: absolute; left: 17px; top: 17px; width: 10px; height: 10px; border-radius: 50%; background: #0b0b0b; border: 1px solid #b0b0b0; transition: background .2s; }
-    .node:hover::before, .node[aria-pressed="true"]::before { background: #fff; }
-    .node span { position: absolute; left: 35px; top: 11px; width: max-content; padding: 2px 7px; background: #080808e8; font-size: 11px; letter-spacing: .04em; color: #ccc; opacity: 0; transition: opacity .2s; }
-    .node:hover span, .node:focus-visible span, .node[aria-pressed="true"] span, .node.origin span { opacity: 1; }
-    .caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px 24px; min-height: 58px; padding: 16px 0; color: var(--muted); font-size: 12px; line-height: 1.7; border-bottom: 1px solid var(--rule); }
+    .controls [data-action="zoom-in"], .controls [data-action="zoom-out"] { font-size: 19px; }
+    .controls [data-action="pan"][aria-pressed="true"] { border-color: #888; background: #1a1a1a; }
+    .controls .flip { display: flex; align-items: center; gap: 9px; margin-left: 10px; padding: 0 15px; border-color: #555; }
+    .flip svg { width: 17px; height: 17px; }
+    .stage { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; isolation: isolate; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+    .stage.dragging, .stage.dragging .node { cursor: grabbing; }
+    .stage[data-pan="true"] { touch-action: none; cursor: move; }
+    .plane, .phase, .artwork, .route-map, .nodes { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .plane { transform-origin: center; pointer-events: none; }
+    .artwork { display: block; object-fit: contain; pointer-events: none; }
+    .glow { filter: blur(1.3px); opacity: .13; mix-blend-mode: screen; }
+    .route-map { overflow: visible; }
+    .route { fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 3px #fff9); }
+    .nodes { pointer-events: none; }
+    .node { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px; background: none; border: 0; padding: 0; pointer-events: auto; border-radius: 50%; color: #ccc; }
+    .node::before { content: ""; position: absolute; left: 19px; top: 19px; width: 6px; height: 6px; border-radius: 50%; background: #000; border: 1px solid #999; opacity: .55; transition: opacity .2s, background .2s; }
+    .stage:hover .node::before, .node:focus-visible::before { opacity: 1; }
+    .node:hover::before, .node[aria-pressed="true"]::before { background: #fff; border-color: #fff; opacity: 1; box-shadow: 0 0 9px #fff6; }
+    .node span { position: absolute; left: 33px; top: 11px; width: max-content; padding: 2px 7px; background: #000e; font-size: 11px; letter-spacing: .04em; opacity: 0; transition: opacity .2s; }
+    .node:hover span, .node:focus-visible span, .node[aria-pressed="true"] span { opacity: 1; }
+    .caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; min-height: 62px; padding: 18px 0; color: var(--muted); font-size: 12px; line-height: 1.7; border-bottom: 1px solid var(--rule); }
     .caption p { margin: 0; }
-    #selection { color: #ccc; }
-    .source { width: min(100% - 48px, 880px); margin: 56px auto 100px; }
+    .selection { color: #ccc; }
+    .source { width: min(100% - 48px, 880px); margin: -30px auto 100px; }
     .source > summary { display: flex; align-items: center; gap: 12px; cursor: pointer; min-height: 48px; font-size: 13px; color: #b5b5b5; list-style: none; }
     .source > summary::-webkit-details-marker { display: none; }
     .source > summary::before { content: "+"; color: #eee; font-size: 18px; width: 12px; }
     .source[open] > summary::before { content: "−"; }
-    .source-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 16px 0; font-size: 12px; color: var(--muted); }
+    .source-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 16px 0; font-size: 12px; line-height: 1.7; color: var(--muted); }
     .source-actions p { margin: 0; }
     #download { background: none; border: 1px solid #444; padding: 12px 16px; white-space: nowrap; }
-    pre { max-height: 520px; overflow: auto; padding: 24px; border: 1px solid #292929; font-size: 12px; line-height: 1.7; tab-size: 2; color: #bdbdbd; background: #0c0c0c; }
-    noscript p { padding: 32px; text-align: center; }
-    @media (max-width: 600px) {
-      .intro { padding: 66px 0 48px; font-size: 16px; line-height: 1.85; }
+    pre { max-height: 520px; overflow: auto; padding: 24px; border: 1px solid #292929; font-size: 12px; line-height: 1.7; tab-size: 2; color: #bdbdbd; background: #090909; }
+    noscript p { padding: 24px; text-align: center; }
+    @media (max-width: 700px) {
+      .intro { padding: 66px 0 56px; font-size: 16px; line-height: 1.85; }
       .meta { margin-bottom: 30px; }
-      .experiment { width: calc(100% - 32px); }
-      .toolbar { display: block; padding: 16px 0 8px; }
-      .orientation { font-size: 12px; letter-spacing: 0; }
-      .controls { gap: 0; justify-content: flex-end; margin-top: 10px; }
-      .controls button { min-width: 44px; }
-      #flip { padding: 0 9px; margin-left: 3px; font-size: 13px; }
-      .stage { aspect-ratio: .82; }
-      .caption { font-size: 11px; }
-      .source { margin-top: 34px; }
+      .experiment { width: calc(100% - 24px); margin-bottom: 84px; }
+      .toolbar { flex-wrap: wrap; gap: 8px; padding: 13px 0 8px; }
+      .tree-heading { width: 100%; justify-content: space-between; gap: 8px; }
+      .tree-heading h2 { font-size: 17px; }
+      .orientation { font-size: 11px; }
+      .controls { width: 100%; justify-content: flex-end; gap: 0; }
+      .controls button { padding: 0 8px; }
+      .controls .flip { padding: 0 12px; margin-left: 8px; }
+      .caption { font-size: 11px; padding: 14px 3px; }
       .source-actions { align-items: start; }
       pre { padding: 14px; }
     }
-    @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; } .glow { filter: none; } }
   </style>
 </head>
 <body>
@@ -77,354 +89,269 @@
       <h1>根与冠</h1>
       <p class="meta">GPT-6 · <time datetime="2026-09-13">2026-09-13</time></p>
       <p>一个故事可以沿着一条线向前，也可以在某些时刻分岔。同一个起点，由此通向不同的经历与结局。这份构想试着把这些可能画成一棵树，让故事的分支成为可以观看、触碰和回溯的形状。</p>
-      <p>在黑色的空间里，一棵树以黑白两色显现：树干支撑枝条，细枝托起叶片，疏密相间的叶片组成树冠。叶片收成简洁的平面形状，枝干用少量留白刻出纹路，明暗来自黑白形状的疏密。每一条枝干都来自唯一的上游，分开后不再汇合；沿着任意一条路径往回走，都能回到共同的起点。</p>
-      <p>当起点在上，分支向下延伸，像根系一样展开一个人的种种可能。把整棵树翻过来，同样的分叉换上枝叶，形成树冠：从分散的末端往下追溯，又会发现这些路径原来同出一人。树冠与根系共用同一套分叉关系，各自呈现枝叶与根须的外观。翻转不改变故事之间的关系，却给了我们另一个理解它们的方向。</p>
-      <p>下面先呈现这棵树本身。直接用鼠标拖拽，就能在树冠与根系之间翻转；也可以点击节点，看一条路径如何连接起点。具体人物、场景与结局暂时留空，让形态和观看方式先成立。</p>
+      <p>在黑色的空间里，一棵庞大的树以银白细线显现。树干与枝条舒展在同一个平面，细碎的笔触聚成抽象的树冠；线条的疏密、断续与微光，留下树的纹理。每一条枝干都来自唯一的上游，分开后不再汇合；沿着任意一条路径往回走，都能回到共同的起点。</p>
+      <p>当起点在上，分支向下延伸，像根系一样展开一个人的种种可能。把整棵树翻过来，同样的分叉换上枝叶，形成树冠：从分散的末端往下追溯，又会发现这些路径原来同出一人。翻转时，主干与主要分叉尽量保留原来的位置和走向，末梢的叶纹逐渐转为纤细的根须。翻转不改变故事之间的关系，却给了我们另一个理解它们的方向。</p>
+      <p>下面呈现两棵树。第一棵结合疏密银线与断续刻纹，第二棵保留更舒展的枝影与留白。直接用鼠标拖拽，就能分别在树冠与根系之间翻转；也可以放大细看，或点击节点追溯起点。具体人物、场景与结局暂时留空，让形态和观看方式先成立。</p>
     </article>
 
-    <section class="experiment" aria-label="可以翻转的叙事树">
+    <section class="experiment" id="silver-tree" aria-labelledby="silver-title" data-tree="silver">
       <div class="toolbar">
-        <h2 class="orientation" id="orientation" aria-live="polite">冠 · 向共同起点回溯</h2>
-        <div class="controls">
-          <button type="button" id="zoom-out" aria-label="缩小">−</button>
-          <button type="button" id="reset" aria-label="恢复全貌与居中">全貌</button>
-          <button type="button" id="zoom-in" aria-label="放大" title="放大后按住 Shift 拖拽平移；触屏直接拖动">＋</button>
-          <button type="button" id="flip" aria-label="翻转为根系" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
+        <div class="tree-heading"><h2 id="silver-title">银线 · 刻纹</h2><span class="orientation" aria-live="polite">冠 · 向共同起点回溯</span></div>
+        <div class="controls" role="group" aria-label="银线刻纹的观看控制">
+          <button type="button" data-action="zoom-out" aria-label="缩小第一棵树">−</button>
+          <button type="button" data-action="reset" aria-label="第一棵树恢复全貌与居中">全貌</button>
+          <button type="button" data-action="zoom-in" aria-label="放大第一棵树">＋</button>
+          <button type="button" data-action="pan" aria-label="移动第一棵树" aria-pressed="false">移动</button>
+          <button type="button" class="flip" data-action="flip" aria-label="第一棵树翻转为根系"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
         </div>
       </div>
-      <div class="stage" id="stage">
-        <canvas id="tree" aria-label="黑白树形，朝上呈现枝叶与树冠，朝下呈现根系，分支之间不再汇合。可通过覆盖在树上的节点按钮选择路径。" role="img"></canvas>
-        <div class="nodes" id="nodes" role="group" aria-label="选择树上的节点"></div>
+      <div class="stage" tabindex="0" role="group" aria-label="第一棵树，拖拽翻转，左右方向键或空格键翻转，加减键缩放" data-pan="false">
+        <div class="plane">
+          <div class="phase roots"><img class="artwork" src="assets/silver-roots.png" width="1254" height="1254" alt="" draggable="false" decoding="async"></div>
+          <div class="phase crown"><img class="artwork" src="assets/silver-crown.png" width="1254" height="1254" alt="银白细线与断续刻纹组成的大树，枝条舒展，树冠疏密相间。" draggable="false" decoding="async" fetchpriority="high"></div>
+          <svg class="route-map" viewBox="0 0 1000 1000" aria-hidden="true"><path class="route" d=""/></svg>
+        </div>
+        <div class="nodes" role="group" aria-label="第一棵树的节点"></div>
       </div>
-      <noscript><p>开启 JavaScript 后，可以观看和翻转这棵树。上方构想文字仍可正常阅读。</p></noscript>
-      <div class="caption">
-        <p id="selection" role="status">所有分岔，共同起点。</p>
-        <p>拖拽翻转 · 点击节点追溯</p>
-      </div>
+      <div class="caption"><p class="selection" role="status">所有分岔，共同起点。</p><p class="gesture-hint">拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯</p></div>
     </section>
+
+    <section class="experiment" id="open-tree" aria-labelledby="open-title" data-tree="open">
+      <div class="toolbar">
+        <div class="tree-heading"><h2 id="open-title">留白 · 枝影</h2><span class="orientation" aria-live="polite">冠 · 向共同起点回溯</span></div>
+        <div class="controls" role="group" aria-label="留白枝影的观看控制">
+          <button type="button" data-action="zoom-out" aria-label="缩小第二棵树">−</button>
+          <button type="button" data-action="reset" aria-label="第二棵树恢复全貌与居中">全貌</button>
+          <button type="button" data-action="zoom-in" aria-label="放大第二棵树">＋</button>
+          <button type="button" data-action="pan" aria-label="移动第二棵树" aria-pressed="false">移动</button>
+          <button type="button" class="flip" data-action="flip" aria-label="第二棵树翻转为根系"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
+        </div>
+      </div>
+      <div class="stage" tabindex="0" role="group" aria-label="第二棵树，拖拽翻转，左右方向键或空格键翻转，加减键缩放" data-pan="false">
+        <div class="plane">
+          <div class="phase roots"><img class="artwork" src="assets/open-roots.png" width="1254" height="1254" alt="" draggable="false" decoding="async" loading="lazy"></div>
+          <div class="phase crown"><img class="artwork" src="assets/open-crown.png" width="1254" height="1254" alt="留白开阔的平面银线大树，流畅枝干间散布细小的叶状笔触。" draggable="false" decoding="async" loading="lazy"></div>
+          <svg class="route-map" viewBox="0 0 1000 1000" aria-hidden="true"><path class="route" d=""/></svg>
+        </div>
+        <div class="nodes" role="group" aria-label="第二棵树的节点"></div>
+      </div>
+      <div class="caption"><p class="selection" role="status">所有分岔，共同起点。</p><p class="gesture-hint">拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯</p></div>
+    </section>
+    <noscript><p>开启 JavaScript 后，可以分别翻转和放大这两棵树。</p></noscript>
 
     <details class="source" id="source">
       <summary>查看实现代码</summary>
-      <div class="source-actions"><p>完整 HTML，包含绘图与交互，可下载后直接打开。</p><button type="button" id="download">下载 HTML</button></div>
-      <pre tabindex="0" aria-label="完整 HTML 源代码"><code id="source-code"></code></pre>
+      <div class="source-actions"><p id="download-status" role="status">下载会将两棵树的正反画面一并嵌入 HTML，可离线打开。</p><button type="button" id="download">下载 HTML</button></div>
+      <pre tabindex="0" aria-label="HTML 源代码"><code id="source-code"></code></pre>
     </details>
   </main>
 
   <script id="tree-program">
   (() => {
     'use strict';
-    // Capture the original document before adding generated nodes or source text.
+    // Keep an unmodified source document for the source viewer and offline export.
     const sourceHTML = '<!doctype html>\n' + document.documentElement.outerHTML;
-    const canvas = document.getElementById('tree');
-    const ctx = canvas.getContext('2d');
-    const stage = document.getElementById('stage');
-    const nodeLayer = document.getElementById('nodes');
-    const flipButton = document.getElementById('flip');
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const branches = [];
-    let seed = 14387;
-    function random() {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      return seed / 4294967296;
-    }
-    const between = (a, b) => a + (b - a) * random();
-    const mix = (a, b, t) => a + (b - a) * t;
-    const W = 1200, H = 1100;
-    const origin = { x: 603, y: 975 };
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const mix = (a, b, t) => a + (b-a)*t;
+    const smoothstep = t => { t=clamp(t,0,1); return t*t*(3-2*t); };
+    // Paths are registered to the approved artwork, in a 1000 × 1000 plane.
+    // Each route shares the trunk and then diverges; roots use the SAME routes.
+    const structures = {
+      silver: {
+        base: [490,926],
+        trunk: 'M490 926 C484 882 496 844 497 805 C497 767 488 725 484 704',
+        routes: [
+          { point:[301,605], path:'C468 661 431 644 395 627 C357 610 334 601 301 605' },
+          { point:[425,528], path:'C449 657 439 620 439 580 C438 557 432 541 425 528' },
+          { point:[506,426], path:'C499 667 512 632 515 588 C528 525 510 469 506 426' },
+          { point:[671,568], path:'C526 652 583 623 633 602 C653 593 667 583 671 568' }
+        ]
+      },
+      open: {
+        base: [502,926],
+        trunk: 'M502 926 C501 885 501 850 497 809 C493 775 491 738 482 705',
+        routes: [
+          { point:[326,641], path:'C457 679 430 666 408 653 C374 632 350 635 326 641' },
+          { point:[370,445], path:'C473 656 462 624 446 589 C417 541 388 499 370 445' },
+          { point:[513,448], path:'C483 654 487 613 494 567 C502 527 510 481 513 448' },
+          { point:[688,521], path:'C512 653 549 619 581 594 C615 568 642 526 688 521' }
+        ]
+      }
+    };
 
-    // Each fork owns its own horizontal territory. This prevents branches
-    // from crossing while allowing an asymmetric, rounded silhouette.
-    function grow(start, end, width, depth, lo, hi, parent = null) {
-      const dx=end.x-start.x, dy=end.y-start.y;
-      const incoming = parent ? parent.end.x-parent.c2.x : -5;
-      const incomingY = parent ? parent.end.y-parent.c2.y : -60;
-      const tangentLength = Math.hypot(incoming,incomingY) || 1;
-      const length = Math.hypot(dx,dy);
-      const lead = Math.max(Math.min(start.x,end.x),Math.min(Math.max(start.x,end.x),start.x+incoming/tangentLength*length*.3));
-      const branch = {
-        id:branches.length,parent,start,end,width,depth,
-        c1:{x:lead,y:start.y+dy*.34},
-        c2:{x:end.x-dx*.07,y:end.y-dy*.4},
-        phase:between(0,Math.PI*2),children:[]
-      };
-      branches.push(branch);
-      if(parent) parent.children.push(branch);
-      if(depth >= 6) return branch;
-      const split=mix(lo,hi,between(.43,.57));
-      for(const [left,right] of [[lo,split],[split,hi]]) {
-        const x=mix(left,right,between(.3,.7));
-        const outer=Math.abs(x-600)/520;
-        const rise=200*Math.pow(.64,depth)*(1-outer*.37)*between(.82,1.18);
-        grow(end,{x,y:end.y-rise},width*between(.59,.7),depth+1,left,right,branch);
-      }
-      return branch;
-    }
-    grow(origin,{x:582,y:766},34,0,90,1110);
-    // Fit the complete silhouette, with room around the outermost twigs.
-    const allPoints = branches.flatMap(b => [b.start,b.end,b.c1,b.c2]);
-    const xmin = Math.min(...allPoints.map(p=>p.x)), xmax = Math.max(...allPoints.map(p=>p.x));
-    const ymin = Math.min(...allPoints.map(p=>p.y)), ymax = Math.max(...allPoints.map(p=>p.y));
-    const fit = Math.min(1030/(xmax-xmin),890/(ymax-ymin));
-    const seen = new Set();
-    for (const p of allPoints) {
-      if (seen.has(p)) continue;
-      seen.add(p);
-      p.x = 600+(p.x-(xmin+xmax)/2)*fit;
-      p.y = 550+(p.y-(ymin+ymax)/2)*fit;
-    }
-    for (const b of branches) b.width *= fit;
-
-    function sample(b, t) {
-      const s = 1 - t;
-      return {
-        x: s*s*s*b.start.x + 3*s*s*t*b.c1.x + 3*s*t*t*b.c2.x + t*t*t*b.end.x,
-        y: s*s*s*b.start.y + 3*s*s*t*b.c1.y + 3*s*t*t*b.c2.y + t*t*t*b.end.y
-      };
-    }
-    function tangent(b, t) {
-      const s = 1 - t;
-      const dx = 3*s*s*(b.c1.x-b.start.x) + 6*s*t*(b.c2.x-b.c1.x) + 3*t*t*(b.end.x-b.c2.x);
-      const dy = 3*s*s*(b.c1.y-b.start.y) + 6*s*t*(b.c2.y-b.c1.y) + 3*t*t*(b.end.y-b.c2.y);
-      const length = Math.hypot(dx, dy) || 1;
-      return { x: -dy / length, y: dx / length };
-    }
-    function radius(b, t) {
-      return b.width * .5 * (1 - .36*t) * (1 + .025*Math.sin(t*7+b.phase));
-    }
-    function path(c, b) {
-      c.beginPath(); c.moveTo(b.start.x, b.start.y);
-      c.bezierCurveTo(b.c1.x, b.c1.y, b.c2.x, b.c2.y, b.end.x, b.end.y);
-    }
-
-    // Flat, print-like shapes: tapered ivory branches, a few dark incisions,
-    // and individually placed leaves. No lighting model or particle foliage.
-    function makePlate() {
-      const c=document.createElement('canvas'); c.width=W*2; c.height=H*2;
-      const ink=c.getContext('2d'); ink.scale(2,2);
-      ink.lineCap='round'; ink.lineJoin='round';
-      return [c,ink];
-    }
-    const [plate,ink]=makePlate();
-    const [rootPlate,rootInk]=makePlate();
-    const [foliage,leafInk]=makePlate();
-    function drawBranch(c,b,root=false) {
-      const steps=40;
-      c.beginPath();
-      for(const side of [-1,1]) {
-        for(let i=0;i<=steps;i++) {
-          const t=side<0 ? i/steps : 1-i/steps;
-          const p=sample(b,t), n=tangent(b,t);
-          const tip=root && !b.children.length ? Math.pow(1-t,.65) : 1;
-          const r=radius(b,t)*side*(root ? .82 : 1)*tip;
-          if(side<0 && i===0) c.moveTo(p.x+n.x*r,p.y+n.y*r);
-          else c.lineTo(p.x+n.x*r,p.y+n.y*r);
+    class TreeView {
+      constructor(section, index) {
+        this.section=section; this.ordinal=index===0?'第一棵树':'第二棵树';
+        this.stage=section.querySelector('.stage'); this.plane=section.querySelector('.plane');
+        this.crown=section.querySelector('.crown'); this.route=section.querySelector('.route');
+        this.orientation=section.querySelector('.orientation'); this.selection=section.querySelector('.selection');
+        this.hint=section.querySelector('.gesture-hint'); this.buttons={};
+        for(const b of section.querySelectorAll('[data-action]')) this.buttons[b.dataset.action]=b;
+        this.angle=0; this.zoom=1; this.pan={x:0,y:0}; this.panMode=false;
+        this.selected=-1; this.drag=null; this.animation=0; this.blockClickUntil=0;
+        this.width=1; this.height=1;
+        this.structure=structures[section.dataset.tree];
+        this.markers=[{point:this.structure.base,label:'共同起点'},...this.structure.routes.map((r,i)=>({...r,label:`分岔 ${String(i+1).padStart(2,'0')}`}))];
+        this.createNodes();
+        // Luminous ink edges only: no directional light, shaded bark or 3D scene.
+        for(const phase of section.querySelectorAll('.phase')) {
+          const glow=phase.querySelector('img').cloneNode();
+          glow.classList.add('glow'); glow.alt=''; glow.setAttribute('aria-hidden','true'); phase.append(glow);
         }
+        this.buttons.flip.addEventListener('click',()=>this.flip());
+        this.buttons['zoom-in'].addEventListener('click',()=>this.setZoom(this.zoom*1.35));
+        this.buttons['zoom-out'].addEventListener('click',()=>this.setZoom(this.zoom/1.35));
+        this.buttons.reset.addEventListener('click',()=>{this.pan={x:0,y:0};this.setPanMode(false);this.setZoom(1);});
+        this.buttons.pan.addEventListener('click',()=>this.setPanMode(!this.panMode));
+        this.stage.addEventListener('pointerdown',e=>this.pointerDown(e));
+        this.stage.addEventListener('pointermove',e=>this.pointerMove(e));
+        this.stage.addEventListener('pointerup',e=>this.pointerEnd(e,false));
+        this.stage.addEventListener('pointercancel',e=>this.pointerEnd(e,true));
+        this.stage.addEventListener('lostpointercapture',e=>this.pointerEnd(e,true));
+        this.stage.addEventListener('click',e=>{
+          if(e.detail!==0 && performance.now()<this.blockClickUntil) {e.preventDefault();e.stopImmediatePropagation();}
+        },true);
+        this.stage.addEventListener('keydown',e=>this.keyDown(e));
+        this.resizeObserver=new ResizeObserver(()=>this.resize()); this.resizeObserver.observe(this.stage);
+        this.resize();
       }
-      c.closePath(); c.fillStyle=root ? '#bcbcbc' : '#d8d8d8'; c.fill();
-      if(b.depth>3) return;
-      for(const offset of b.depth===0 ? [-.42,.35] : [-.25]) {
-        c.beginPath();
-        for(let i=0;i<=steps;i++) {
-          const begin=offset<0 ? .17 : .43;
-          const t=begin+i/steps*.42, p=sample(b,t), n=tangent(b,t);
-          const r=radius(b,t)*offset;
-          if(i===0) c.moveTo(p.x+n.x*r,p.y+n.y*r);
-          else c.lineTo(p.x+n.x*r,p.y+n.y*r);
+      createNodes() {
+        const layer=this.section.querySelector('.nodes');
+        this.markers.forEach((m,i)=>{
+          const b=document.createElement('button'); b.type='button'; b.className='node';
+          b.setAttribute('aria-label',`${this.ordinal}，${m.label}${i?'，显示通往起点的路径':''}`);
+          b.setAttribute('aria-pressed','false');
+          const label=document.createElement('span');label.textContent=m.label;b.append(label);layer.append(b);m.button=b;
+          b.addEventListener('click',()=>this.select(this.selected===i?-1:i));
+        });
+      }
+      select(index) {
+        this.selected=index;
+        this.route.setAttribute('d',index>0?this.structure.trunk+this.markers[index].path:'');
+        this.selection.textContent=index<0?'所有分岔，共同起点。':index===0?'起点 · 每一条路径都从这里出发。':`${this.markers[index].label} · 沿亮起的枝干，回到共同起点。`;
+        this.render();
+      }
+      fit() { return this.zoom/(Math.abs(Math.cos(this.angle))+Math.abs(Math.sin(this.angle))); }
+      render() {
+        const s=this.fit(),cos=Math.cos(this.angle),sin=Math.sin(this.angle);
+        this.plane.style.transform=`translate(${this.pan.x}px,${this.pan.y}px) rotate(${this.angle}rad) scale(${s})`;
+        // The aligned trunk stays visible throughout. Only its terminal texture changes.
+        this.crown.style.opacity=String(1-smoothstep(((1-cos)/2-.2)/.6));
+        const side=cos>=0?'crown':'roots';
+        if(this.section.dataset.side!==side) {
+          this.orientation.textContent=side==='crown'?'冠 · 向共同起点回溯':'根 · 从起点展开';
+          this.buttons.flip.setAttribute('aria-label',`${this.ordinal}翻转为${side==='crown'?'根系':'树冠'}`);
+          const crownImage=this.crown.querySelector('img');
+          crownImage.setAttribute('aria-hidden',String(side!=='crown'));
+          const rootImage=this.section.querySelector('.roots img');
+          rootImage.alt=side==='roots'?`${this.ordinal}的根系，沿原来的主干与分叉展开，末梢延伸为纤细根须。`:'';
         }
-        c.strokeStyle='#080808'; c.lineWidth=b.depth===0 ? 1.3 : .7; c.stroke();
-      }
-    }
-    for(const b of branches) {
-      if(b.depth<=5) drawBranch(ink,b);
-      drawBranch(rootInk,b,true);
-    }
-    function leaf(x,y,length,rotation,tone) {
-      leafInk.save(); leafInk.translate(x,y); leafInk.rotate(rotation);
-      // One rounded almond silhouette and one restrained vein cut into it.
-      const broad=length*.45;
-      leafInk.beginPath(); leafInk.moveTo(0,0);
-      leafInk.bezierCurveTo(-broad,-length*.22,-broad*.75,-length*.72,0,-length);
-      leafInk.bezierCurveTo(broad*.75,-length*.72,broad,-length*.22,0,0);
-      leafInk.fillStyle=tone; leafInk.fill();
-      leafInk.beginPath(); leafInk.moveTo(0,-length*.12);
-      leafInk.quadraticCurveTo(length*.045,-length*.45,0,-length*.76);
-      leafInk.strokeStyle='#080808'; leafInk.lineWidth=1; leafInk.stroke();
-      leafInk.restore();
-    }
-    for(const b of branches.filter(b=>b.depth>=3 && b.depth<=5)) {
-      const levels=b.depth===3 ? [.48,.84] : [.42,.8];
-      for(const t of levels) {
-        const p=sample(b,t), n=tangent(b,t);
-        const direction=Math.atan2(n.y,n.x);
-        for(const side of [-1,1]) {
-          const leafLength=(b.depth===3 ? 40 : b.depth===4 ? 32 : 25)*between(.9,1.12);
-          const tilt=direction+side*between(.66,.94);
-          const stem=7;
-          const x=p.x+Math.sin(tilt)*stem,y=p.y-Math.cos(tilt)*stem;
-          leafInk.beginPath();leafInk.moveTo(p.x,p.y);leafInk.lineTo(x,y);
-          leafInk.lineWidth=1.1;leafInk.strokeStyle='#bababa';leafInk.stroke();
-          leaf(x,y,leafLength,tilt,(b.id+side)%3===0 ? '#ababab' : '#dedede');
+        this.section.dataset.side=side;
+        this.section.dataset.angle=this.angle.toFixed(4); this.section.dataset.zoom=this.zoom.toFixed(3);
+        this.section.dataset.panX=this.pan.x.toFixed(1);this.section.dataset.panY=this.pan.y.toFixed(1);
+        for(const [i,m] of this.markers.entries()) {
+          const x=(m.point[0]/1000-.5)*this.width,y=(m.point[1]/1000-.5)*this.height;
+          const px=this.width/2+this.pan.x+(x*cos-y*sin)*s;
+          const py=this.height/2+this.pan.y+(x*sin+y*cos)*s;
+          m.button.style.transform=`translate(${px}px,${py}px)`;
+          m.button.style.visibility=px>=22&&px<=this.width-22&&py>=22&&py<=this.height-22?'visible':'hidden';
+          m.button.setAttribute('aria-pressed',String(i===this.selected));
         }
+        this.buttons['zoom-in'].disabled=this.zoom>=4.5;
+        this.buttons['zoom-out'].disabled=this.zoom<=.6;
       }
-      if(b.depth===5) {
-        const n=tangent(b,1);
-        leaf(b.end.x,b.end.y,between(25,32),Math.atan2(n.y,n.x),'#dedede');
+      resize() {
+        const b=this.stage.getBoundingClientRect();this.width=b.width;this.height=b.height;this.clampPan();this.render();
       }
-    }
-
-    // Sparse structural markers leave the branch work visible.
-    const markers = [{ point: origin, branch: null, label: '起点' }];
-    const chosen = branches.filter(b => b.depth === 2).sort((a,b) => a.end.x-b.end.x);
-    chosen.forEach((b,i) => markers.push({ point: b.end, branch: b, label: `分岔 ${String(i+1).padStart(2,'0')}` }));
-    let selected = -1, angle = 0, crown = true, leafOpacity = 1, zoom = 1, pan = {x:0,y:0};
-    let width = 1, height = 1, dpr = 1, animating = false;
-    let animationToken=0, suppressClick=false;
-    for (const [i, marker] of markers.entries()) {
-      const button = document.createElement('button');
-      button.type = 'button'; button.className = 'node' + (i === 0 ? ' origin' : '');
-      button.setAttribute('aria-label', i === 0 ? '共同起点' : `${marker.label}，显示通往起点的路径`);
-      button.setAttribute('aria-pressed', 'false');
-      const label = document.createElement('span'); label.textContent = marker.label;
-      button.append(label); nodeLayer.append(button); marker.button = button;
-      button.addEventListener('click', () => {
-        if(suppressClick) return;
-        selected = selected === i ? -1 : i;
-        document.getElementById('selection').textContent = selected < 0 ? '所有分岔，共同起点。' : selected === 0 ? '起点 · 每一条路径都从这里出发。' : `${marker.label} · 沿亮起的枝干，回到共同起点。`;
-        render();
-      });
-    }
-    function scale() { return Math.min(width/W, height/H) * zoom * (1-.14*Math.abs(Math.sin(angle))); }
-    function project(p) {
-      const x = p.x-W/2, y = p.y-H/2, s = scale();
-      return { x: width/2 + pan.x + (x*Math.cos(angle)-y*Math.sin(angle))*s,
-               y: height/2 + pan.y + (x*Math.sin(angle)+y*Math.cos(angle))*s };
-    }
-    function render() {
-      ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,width,height);
-      ctx.save(); ctx.translate(width/2+pan.x,height/2+pan.y); ctx.rotate(angle);
-      const s = scale(); ctx.scale(s,s); ctx.translate(-W/2,-H/2);
-      ctx.globalAlpha=1-leafOpacity; ctx.drawImage(rootPlate,0,0,W,H);
-      ctx.globalAlpha=leafOpacity; ctx.drawImage(plate,0,0,W,H);
-      ctx.drawImage(foliage,0,0,W,H); ctx.globalAlpha=1;
-      if (selected > 0) {
-        const route = []; let b = markers[selected].branch;
-        while (b) { route.push(b); b = b.parent; }
-        ctx.lineCap = 'round';
-        for (const item of route) {
-          path(ctx,item); ctx.lineWidth = Math.max(1.2,item.width*.16);
-          ctx.strokeStyle = '#fff'; ctx.stroke();
+      clampPan() {
+        const extra=Math.max(0,this.zoom-1)/2+.15;
+        this.pan.x=clamp(this.pan.x,-this.width*extra,this.width*extra);
+        this.pan.y=clamp(this.pan.y,-this.height*extra,this.height*extra);
+      }
+      setZoom(value) {this.zoom=clamp(value,.6,4.5);this.clampPan();this.render();}
+      setPanMode(value) {
+        this.panMode=value;this.stage.dataset.pan=String(value);this.buttons.pan.setAttribute('aria-pressed',String(value));
+        this.hint.textContent=value?'拖拽移动 · 再点「移动」恢复拖拽翻转':'拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯';
+      }
+      cancelAnimation() {cancelAnimationFrame(this.animation);this.animation=0;}
+      settle(target,duration=700) {
+        this.cancelAnimation();const from=this.angle;
+        const finish=()=>{this.angle=((target%(Math.PI*2))+Math.PI*2)%(Math.PI*2);this.animation=0;this.render();};
+        if(motion.matches || Math.abs(target-from)<.001) {finish();return;}
+        const begin=performance.now();
+        const frame=now=>{
+          const t=Math.min(1,(now-begin)/duration);this.angle=mix(from,target,1-Math.pow(1-t,3));this.render();
+          if(t<1)this.animation=requestAnimationFrame(frame);else finish();
+        };
+        this.animation=requestAnimationFrame(frame);
+      }
+      flip(direction=1) {this.settle((Math.round(this.angle/Math.PI)+direction)*Math.PI,950);}
+      pointerDown(e) {
+        if(e.button!==0 || this.drag || !e.isPrimary)return;
+        this.cancelAnimation();this.blockClickUntil=0;
+        const button=e.target.closest('button');if(!button)this.stage.focus({preventScroll:true});
+        this.drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:this.angle,rest:Math.round(this.angle/Math.PI)*Math.PI,
+          px:this.pan.x,py:this.pan.y,moved:false,axis:null,mode:this.panMode||e.shiftKey?'pan':'turn',touch:e.pointerType==='touch'};
+        (button||this.stage).setPointerCapture(e.pointerId);
+      }
+      pointerMove(e) {
+        const d=this.drag;if(!d||d.id!==e.pointerId)return;
+        const dx=e.clientX-d.x,dy=e.clientY-d.y;if(!d.moved&&Math.hypot(dx,dy)<7)return;
+        if(!d.axis) {
+          // Normal vertical touch gestures continue scrolling the long document.
+          if(d.touch&&d.mode==='turn'&&Math.abs(dy)>Math.abs(dx))return;
+          d.axis=d.touch?'x':Math.abs(dx)>=Math.abs(dy)?'x':'y';
         }
+        d.moved=true;this.stage.classList.add('dragging');
+        if(d.mode==='pan') {this.pan.x=d.px+dx;this.pan.y=d.py+dy;this.clampPan();}
+        else this.angle=d.start+(d.axis==='x'?dx:dy)/Math.min(360,this.width*.7)*Math.PI;
+        this.render();
       }
-      ctx.restore();
-      for (const [i,m] of markers.entries()) {
-        const p = project(m.point);
-        m.button.style.transform = `translate(${p.x}px,${p.y}px)`;
-        const visible = p.x > 12 && p.x < width-12 && p.y > 12 && p.y < height-12;
-        m.button.style.visibility = visible ? 'visible' : 'hidden';
-        m.button.setAttribute('aria-pressed', String(selected === i));
+      pointerEnd(e,cancelled) {
+        const d=this.drag;if(!d||d.id!==e.pointerId)return;
+        this.drag=null;this.stage.classList.remove('dragging');
+        if(d.moved)this.blockClickUntil=performance.now()+350;
+        if(d.mode==='pan')return;
+        const delta=this.angle-d.start;
+        const target=cancelled||Math.abs(delta)<Math.PI*.16?d.rest:d.rest+Math.sign(delta)*Math.max(1,Math.round(Math.abs(delta)/Math.PI))*Math.PI;
+        this.settle(target,480);
       }
-      document.getElementById('zoom-out').disabled = zoom <= 1;
-      document.getElementById('zoom-in').disabled = zoom >= 3;
-      canvas.style.touchAction = zoom > 1 ? 'none' : 'pan-y';
-    }
-    function resize() {
-      const box = stage.getBoundingClientRect(); width = box.width; height = box.height;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(width*dpr); canvas.height = Math.round(height*dpr);
-      clampPan(); render();
-    }
-    function clampPan() {
-      const maxX = width*(zoom-1)/2, maxY = height*(zoom-1)/2;
-      pan.x = Math.max(-maxX,Math.min(maxX,pan.x)); pan.y = Math.max(-maxY,Math.min(maxY,pan.y));
-    }
-    function setZoom(value) { if(animating) return; zoom = Math.max(1,Math.min(3,value)); clampPan(); render(); }
-    document.getElementById('zoom-in').addEventListener('click', () => setZoom(zoom+.4));
-    document.getElementById('zoom-out').addEventListener('click', () => setZoom(zoom-.4));
-    document.getElementById('reset').addEventListener('click', () => { pan={x:0,y:0}; setZoom(1); });
-    function updateAngle(value) {
-      angle=value;
-      leafOpacity=(1+Math.cos(angle))/2;
-      crown=Math.cos(angle)>=0;
-      flipButton.setAttribute('aria-pressed',String(crown));
-      flipButton.setAttribute('aria-label',crown ? '翻转为根系' : '翻转为树冠');
-      const title=crown ? '冠 · 向共同起点回溯' : '根 · 从起点展开';
-      if(document.getElementById('orientation').textContent!==title) {
-        document.getElementById('orientation').textContent=title;
+      keyDown(e) {
+        if(e.target!==this.stage)return;
+        const actions={'ArrowLeft':()=>this.flip(-1),'ArrowRight':()=>this.flip(1),' ':()=>this.flip(),'Enter':()=>this.flip(),
+          '+':()=>this.setZoom(this.zoom*1.35),'=':()=>this.setZoom(this.zoom*1.35),'-':()=>this.setZoom(this.zoom/1.35),
+          'Home':()=>{this.pan={x:0,y:0};this.setZoom(1);},'Escape':()=>{this.select(-1);this.setPanMode(false);}};
+        if(actions[e.key]){e.preventDefault();actions[e.key]();}
       }
-      render();
     }
-    function settle(target,duration=650) {
-      const from=angle, token=++animationToken;
-      if(motion.matches || Math.abs(target-from)<.001) {
-        animating=false;flipButton.disabled=false;updateAngle(target);return;
-      }
-      animating=true;flipButton.disabled=true;
-      const begin=performance.now();
-      function frame(now) {
-        if(token!==animationToken) return;
-        const t=Math.min(1,(now-begin)/duration);
-        const eased=1-Math.pow(1-t,3);
-        updateAngle(mix(from,target,eased));
-        if(t<1) requestAnimationFrame(frame);
-        else {animating=false;flipButton.disabled=false;updateAngle(target);}
-      }
-      requestAnimationFrame(frame);
-    }
-    flipButton.addEventListener('click',()=>{
-      pan={x:0,y:0};
-      settle((Math.round(angle/Math.PI)+1)*Math.PI,1000);
+    document.querySelectorAll('[data-tree]').forEach((s,i)=>new TreeView(s,i));
+    document.getElementById('source').addEventListener('toggle',e=>{
+      if(e.target.open)document.getElementById('source-code').textContent=sourceHTML;
     });
-    // Dragging turns the tree at every zoom level. It never requires a first
-    // click on a toolbar button. Shift-drag retains desktop panning.
-    let drag=null;
-    stage.addEventListener('pointerdown',event=>{
-      if(event.button!==0 || drag) return;
-      ++animationToken;animating=false;flipButton.disabled=false;suppressClick=false;
-      drag={id:event.pointerId,x:event.clientX,y:event.clientY,start:angle,
-        rest:Math.round(angle/Math.PI)*Math.PI,px:pan.x,py:pan.y,moved:false,axis:null,
-        mode:event.shiftKey || (event.pointerType==='touch' && zoom>1) ? 'pan' : 'turn'};
-      // Capture on the original button preserves a node's ordinary click.
-      const target=event.target.closest('button') || canvas;
-      target.setPointerCapture(event.pointerId);
-    });
-    stage.addEventListener('pointermove',event=>{
-      if(!drag || drag.id!==event.pointerId) return;
-      const dx=event.clientX-drag.x,dy=event.clientY-drag.y;
-      if(!drag.moved && Math.hypot(dx,dy)<7) return;
-      drag.moved=true;stage.classList.add('dragging');
-      if(drag.mode==='pan') {
-        pan.x=drag.px+dx;pan.y=drag.py+dy;clampPan();render();return;
-      }
-      if(!drag.axis) drag.axis=Math.abs(dx)>=Math.abs(dy) ? 'x' : 'y';
-      const delta=drag.axis==='x' ? dx : dy;
-      pan={x:0,y:0};
-      updateAngle(drag.start+delta/Math.min(300,width*.65)*Math.PI);
-    });
-    function finishDrag(event,cancelled=false) {
-      if(!drag || event.pointerId!==drag.id) return;
-      const last=drag;drag=null;stage.classList.remove('dragging');
-      if(!last.moved) {if(animating) return;settle(last.rest);return;}
-      suppressClick=true;setTimeout(()=>{suppressClick=false;},0);
-      if(last.mode==='pan') return;
-      const delta=angle-last.start;
-      const movedEnough=Math.abs(delta)>Math.PI*.18;
-      const target=cancelled || !movedEnough ? last.rest : last.rest+Math.sign(delta)*Math.max(1,Math.round(Math.abs(delta)/Math.PI))*Math.PI;
-      settle(target,500);
-    }
-    stage.addEventListener('pointerup',event=>finishDrag(event));
-    stage.addEventListener('pointercancel',event=>finishDrag(event,true));
-    stage.addEventListener('lostpointercapture',event=>finishDrag(event,true));
-    stage.addEventListener('click',event=>{
-      if(suppressClick) {event.preventDefault();event.stopImmediatePropagation();}
-    },true);
-    new ResizeObserver(resize).observe(stage);
-    document.getElementById('source').addEventListener('toggle', event => {
-      if (event.target.open) document.getElementById('source-code').textContent = sourceHTML;
-    });
-    document.getElementById('download').addEventListener('click', () => {
-      const url = URL.createObjectURL(new Blob([sourceHTML],{type:'text/html;charset=utf-8'}));
-      const link = document.createElement('a'); link.href=url; link.download='根与冠.html';
-      link.click(); setTimeout(() => URL.revokeObjectURL(url),1000);
+    // Inline all four artwork files only on export, retaining a small page HTML
+    // and normal browser image caching on the website. The download is standalone.
+    document.getElementById('download').addEventListener('click',async()=>{
+      const button=document.getElementById('download'),status=document.getElementById('download-status');
+      button.disabled=true;button.textContent='准备中…';
+      try {
+        const doc=new DOMParser().parseFromString(sourceHTML,'text/html');
+        const sources=[...new Set([...doc.querySelectorAll('img.artwork')].map(img=>img.getAttribute('src')))];
+        const embedded=new Map(await Promise.all(sources.map(async src=>{
+          if(src.startsWith('data:'))return [src,src];
+          const response=await fetch(new URL(src,document.baseURI));if(!response.ok)throw new Error('Image unavailable');
+          const blob=await response.blob();
+          const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob);});
+          return [src,data];
+        })));
+        for(const img of doc.querySelectorAll('img.artwork'))img.setAttribute('src',embedded.get(img.getAttribute('src')));
+        const file='<!doctype html>\n'+doc.documentElement.outerHTML;
+        const url=URL.createObjectURL(new Blob([file],{type:'text/html;charset=utf-8'}));
+        const link=document.createElement('a');link.href=url;link.download='根与冠.html';link.click();
+        setTimeout(()=>URL.revokeObjectURL(url),30000);
+        status.textContent='已生成含全部画面的 HTML，可离线打开。';
+      } catch(error) {status.textContent='图像暂时未能完整载入，请稍后重试下载。';}
+      finally {button.disabled=false;button.textContent='下载 HTML';}
     });
   })();
   </script>
