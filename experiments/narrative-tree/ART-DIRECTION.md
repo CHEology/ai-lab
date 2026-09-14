@@ -25,6 +25,14 @@
 
 矢量版验收：同一局部与原 PNG 并排放大比较，曲线边缘清晰；页面第一棵在约 8.17 倍、第二棵在 12 倍实测。四幅画面均加载为内联 SVG，共 12 条复合曲线路径，页面绘图区无 `img` / `image` 节点、无 CSS 合成层缩放。高倍率拖拽翻转、平移、全貌复位、节点追溯和 HTML 导出通过；390px 布局无横向溢出，控制台无错误。`npm run check` 共 9 项测试通过，新增断言防止 SVG 被替换成内嵌位图。
 
+## 翻转动效修订
+
+用户反馈拖拽翻面过于敏感，按钮翻转中途有抽动。排查发现旧版按旋转正方形包围盒实时缩放，半圈内两次缩小、放大，并在 90° 改变缩放方向。现改为旋转全程保持用户设定的倍率；按钮翻面使用 1.6 秒五次平滑插值，启动与停下时速度、加速度均归零。完成当前翻面前不接受重复翻面或按下拖拽造成的中途重启。
+
+拖拽保留直接跟手，增加 12px 起始死区，完整半圈所需距离随画布宽度取 300–680px；松手时超过半圈的 36% 才完成翻面，较小幅度平稳回位。单次拖拽最多翻半圈，触发门槛不随放大倍率改变，纵向触屏滚动与移动模式保留。
+
+新增针对页面实际控制器的行为测试：恒定倍率、平滑起止、中点连续、重复操作防打断、轻拖回位、明确拖动翻面、反向翻面、取消手势、单次翻面限制、窄屏门槛、12 倍门槛、平移、减少动态效果偏好。浏览器另外检查两棵树的短拖与按钮翻面，并在约 1.82 倍放大下检查直接拖拽及恒定比例。
+
 ## 第一棵树的融合提示词
 
 Edit the first reference tree into the FINAL flat white-line tree illustration for a website. Reference image 1 is the exact composition and tree anatomy to preserve. Reference image 2 supplies only its fine distressed broken engraved line texture. Fuse the AIRY, spacious delicate branching of image 1 with the refined interrupted bark strokes and fine textured crown marks of image 2. Keep the same broad grand mature-tree proportions and silhouette as image 1, no thicker trunk. Keep the original black gaps and elegant naturally asymmetric branches. A very subtle luminous white ink edge, no atmospheric glow. Strictly TWO DIMENSIONAL white line drawing on an opaque pure black background. Flat line grain, no modeled bark or cylindrical shading, no realistic metal, no photographic foliage. Foliage remains tiny abstract curved and broken marks, not larger literal leaf icons. No 3D, no gradients, no gray fill or solid foliage masses. Whole tree fits in the square image, centered exactly like the first reference. No text, frame or extra objects. Preserve every major branch junction and its position from reference 1. Fine detailed final artwork.

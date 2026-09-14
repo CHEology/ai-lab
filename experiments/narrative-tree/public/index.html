@@ -154,6 +154,7 @@
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     const mix = (a, b, t) => a + (b-a)*t;
     const smoothstep = t => { t=clamp(t,0,1); return t*t*(3-2*t); };
+    const easeTurn = t => t*t*t*(t*(t*6-15)+10);
     // Paths are registered to the approved artwork, in a 1000 × 1000 plane.
     // Each route shares the trunk and then diverges; roots use the SAME routes.
     const structures = {
@@ -260,9 +261,10 @@
         this.selection.textContent=index<0?'所有分岔，共同起点。':index===0?'起点 · 每一条路径都从这里出发。':`${this.markers[index].label} · 沿亮起的枝干，回到共同起点。`;
         this.render();
       }
-      fit() { return this.zoom/(Math.abs(Math.cos(this.angle))+Math.abs(Math.sin(this.angle))); }
       render() {
-        const s=this.fit(),cos=Math.cos(this.angle),sin=Math.sin(this.angle);
+        // A turn keeps its scale. Fitting a rotating square made the tree
+        // shrink twice per half-turn, with an abrupt reversal at 90 degrees.
+        const s=this.zoom,cos=Math.cos(this.angle),sin=Math.sin(this.angle);
         const transform=size=>`translate(${size/2+this.pan.x*size/this.width} ${size/2+this.pan.y*size/this.height}) rotate(${this.angle*180/Math.PI}) scale(${s}) translate(${-size/2} ${-size/2})`;
         for(const phase of this.phases) {
           if(phase.geometry)phase.geometry.setAttribute('transform',transform(phase.size));
@@ -314,30 +316,40 @@
         this.panMode=value;this.stage.dataset.pan=String(value);this.buttons.pan.setAttribute('aria-pressed',String(value));
         this.hint.textContent=value?'拖拽移动 · 再点「移动」恢复拖拽翻转':'拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯';
       }
-      cancelAnimation() {cancelAnimationFrame(this.animation);this.animation=0;}
-      settle(target,duration=700) {
-        this.cancelAnimation();const from=this.angle;
-        const finish=()=>{this.angle=((target%(Math.PI*2))+Math.PI*2)%(Math.PI*2);this.animation=0;this.render();};
+      settle(target,duration=1000) {
+        cancelAnimationFrame(this.animation);const from=this.angle;
+        const finish=()=>{
+          this.angle=((target%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+          this.animation=0;this.buttons.flip.disabled=false;this.render();
+        };
         if(motion.matches || Math.abs(target-from)<.001) {finish();return;}
+        // Complete a single gesture before accepting another. Repeated button
+        // clicks must not retarget the half-turn or restart its easing midway.
+        this.buttons.flip.disabled=true;
         const begin=performance.now();
         const frame=now=>{
-          const t=Math.min(1,(now-begin)/duration);this.angle=mix(from,target,1-Math.pow(1-t,3));this.render();
+          const t=clamp((now-begin)/duration,0,1);this.angle=mix(from,target,easeTurn(t));this.render();
           if(t<1)this.animation=requestAnimationFrame(frame);else finish();
         };
         this.animation=requestAnimationFrame(frame);
       }
-      flip(direction=1) {this.settle((Math.round(this.angle/Math.PI)+direction)*Math.PI,950);}
+      flip(direction=1) {
+        if(this.animation||this.drag)return;
+        this.settle((Math.round(this.angle/Math.PI)+direction)*Math.PI,1600);
+      }
       pointerDown(e) {
-        if(e.button!==0 || this.drag || !e.isPrimary)return;
-        this.cancelAnimation();this.blockClickUntil=0;
+        if(e.button!==0 || this.drag || this.animation || !e.isPrimary)return;
+        this.blockClickUntil=0;
         const button=e.target.closest('button');if(!button)this.stage.focus({preventScroll:true});
         this.drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:this.angle,rest:Math.round(this.angle/Math.PI)*Math.PI,
-          px:this.pan.x,py:this.pan.y,moved:false,axis:null,mode:this.panMode||e.shiftKey?'pan':'turn',touch:e.pointerType==='touch'};
+          px:this.pan.x,py:this.pan.y,moved:false,axis:null,travel:clamp(this.width*.65,300,680),
+          mode:this.panMode||e.shiftKey?'pan':'turn',touch:e.pointerType==='touch'};
         (button||this.stage).setPointerCapture(e.pointerId);
       }
       pointerMove(e) {
         const d=this.drag;if(!d||d.id!==e.pointerId)return;
-        const dx=e.clientX-d.x,dy=e.clientY-d.y;if(!d.moved&&Math.hypot(dx,dy)<7)return;
+        const dx=e.clientX-d.x,dy=e.clientY-d.y,deadZone=d.mode==='pan'?7:12;
+        if(!d.moved&&Math.hypot(dx,dy)<deadZone)return;
         if(!d.axis) {
           // Normal vertical touch gestures continue scrolling the long document.
           if(d.touch&&d.mode==='turn'&&Math.abs(dy)>Math.abs(dx))return;
@@ -345,7 +357,11 @@
         }
         d.moved=true;this.stage.classList.add('dragging');
         if(d.mode==='pan') {this.pan.x=d.px+dx;this.pan.y=d.py+dy;this.clampPan();}
-        else this.angle=d.start+(d.axis==='x'?dx:dy)/Math.min(360,this.width*.7)*Math.PI;
+        else {
+          const distance=d.axis==='x'?dx:dy;
+          const progress=Math.sign(distance)*Math.max(0,Math.abs(distance)-deadZone)/d.travel;
+          this.angle=d.start+clamp(progress,-1,1)*Math.PI;
+        }
         this.render();
       }
       pointerEnd(e,cancelled) {
@@ -354,8 +370,11 @@
         if(d.moved)this.blockClickUntil=performance.now()+350;
         if(d.mode==='pan')return;
         const delta=this.angle-d.start;
-        const target=cancelled||Math.abs(delta)<Math.PI*.16?d.rest:d.rest+Math.sign(delta)*Math.max(1,Math.round(Math.abs(delta)/Math.PI))*Math.PI;
-        this.settle(target,480);
+        // Small movements return to their starting side. An intentional drag
+        // commits one half-turn, independent of zoom and pointer velocity.
+        const target=cancelled||Math.abs(delta)<Math.PI*.36?d.rest:d.rest+Math.sign(delta)*Math.PI;
+        const remaining=Math.abs(target-this.angle)/Math.PI;
+        this.settle(target,Math.min(1100,500+remaining*650));
       }
       keyDown(e) {
         if(e.target!==this.stage)return;
