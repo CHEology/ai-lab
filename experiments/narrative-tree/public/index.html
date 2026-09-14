@@ -42,7 +42,6 @@
     .plane, .phase, .artwork, .route-map, .nodes { position: absolute; inset: 0; width: 100%; height: 100%; }
     .plane { transform-origin: center; pointer-events: none; }
     .artwork { display: block; object-fit: contain; pointer-events: none; }
-    .glow { filter: blur(1.3px); opacity: .13; mix-blend-mode: screen; }
     .route-map { overflow: visible; }
     .route { fill: none; stroke: #fff; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 3px #fff9); }
     .nodes { pointer-events: none; }
@@ -80,7 +79,7 @@
       .source-actions { align-items: start; }
       pre { padding: 14px; }
     }
-    @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; } .glow { filter: none; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before { transition: none !important; } }
   </style>
 </head>
 <body>
@@ -107,9 +106,9 @@
       </div>
       <div class="stage" tabindex="0" role="group" aria-label="第一棵树，拖拽翻转，左右方向键或空格键翻转，加减键缩放" data-pan="false">
         <div class="plane">
-          <div class="phase roots"><img class="artwork" src="assets/silver-roots.png" width="1254" height="1254" alt="" draggable="false" decoding="async"></div>
-          <div class="phase crown"><img class="artwork" src="assets/silver-crown.png" width="1254" height="1254" alt="银白细线与断续刻纹组成的大树，枝条舒展，树冠疏密相间。" draggable="false" decoding="async" fetchpriority="high"></div>
-          <svg class="route-map" viewBox="0 0 1000 1000" aria-hidden="true"><path class="route" d=""/></svg>
+          <div class="phase roots"><img class="artwork" src="assets/silver-roots.svg" width="1254" height="1254" alt="" draggable="false" decoding="async"></div>
+          <div class="phase crown"><img class="artwork" src="assets/silver-crown.svg" width="1254" height="1254" alt="银白细线与断续刻纹组成的大树，枝条舒展，树冠疏密相间。" draggable="false" decoding="async" fetchpriority="high"></div>
+          <svg class="route-map" viewBox="0 0 1000 1000" aria-hidden="true"><g class="route-geometry"><path class="route" d=""/></g></svg>
         </div>
         <div class="nodes" role="group" aria-label="第一棵树的节点"></div>
       </div>
@@ -129,9 +128,9 @@
       </div>
       <div class="stage" tabindex="0" role="group" aria-label="第二棵树，拖拽翻转，左右方向键或空格键翻转，加减键缩放" data-pan="false">
         <div class="plane">
-          <div class="phase roots"><img class="artwork" src="assets/open-roots.png" width="1254" height="1254" alt="" draggable="false" decoding="async" loading="lazy"></div>
-          <div class="phase crown"><img class="artwork" src="assets/open-crown.png" width="1254" height="1254" alt="留白开阔的平面银线大树，流畅枝干间散布细小的叶状笔触。" draggable="false" decoding="async" loading="lazy"></div>
-          <svg class="route-map" viewBox="0 0 1000 1000" aria-hidden="true"><path class="route" d=""/></svg>
+          <div class="phase roots"><img class="artwork" src="assets/open-roots.svg" width="1254" height="1254" alt="" draggable="false" decoding="async" loading="lazy"></div>
+          <div class="phase crown"><img class="artwork" src="assets/open-crown.svg" width="1254" height="1254" alt="留白开阔的平面银线大树，流畅枝干间散布细小的叶状笔触。" draggable="false" decoding="async" loading="lazy"></div>
+          <svg class="route-map" viewBox="0 0 1000 1000" aria-hidden="true"><g class="route-geometry"><path class="route" d=""/></g></svg>
         </div>
         <div class="nodes" role="group" aria-label="第二棵树的节点"></div>
       </div>
@@ -185,6 +184,8 @@
         this.section=section; this.ordinal=index===0?'第一棵树':'第二棵树';
         this.stage=section.querySelector('.stage'); this.plane=section.querySelector('.plane');
         this.crown=section.querySelector('.crown'); this.route=section.querySelector('.route');
+        this.routeGeometry=section.querySelector('.route-geometry');
+        this.phases=[...section.querySelectorAll('.phase')].map(element=>({element,geometry:null,size:1254}));
         this.orientation=section.querySelector('.orientation'); this.selection=section.querySelector('.selection');
         this.hint=section.querySelector('.gesture-hint'); this.buttons={};
         for(const b of section.querySelectorAll('[data-action]')) this.buttons[b.dataset.action]=b;
@@ -194,11 +195,14 @@
         this.structure=structures[section.dataset.tree];
         this.markers=[{point:this.structure.base,label:'共同起点'},...this.structure.routes.map((r,i)=>({...r,label:`分岔 ${String(i+1).padStart(2,'0')}`}))];
         this.createNodes();
-        // Luminous ink edges only: no directional light, shaded bark or 3D scene.
-        for(const phase of section.querySelectorAll('.phase')) {
-          const glow=phase.querySelector('img').cloneNode();
-          glow.classList.add('glow'); glow.alt=''; glow.setAttribute('aria-hidden','true'); phase.append(glow);
-        }
+        // Load path geometry near the viewport. Zoom transforms the SVG paths,
+        // not a CSS-scaled bitmap or a blurred compositing layer.
+        this.vectorObserver=new IntersectionObserver(entries=>{
+          if(entries.some(entry=>entry.isIntersecting)) {
+            this.vectorObserver.disconnect();this.phases.forEach(phase=>this.loadVector(phase));
+          }
+        },{rootMargin:'600px'});
+        this.vectorObserver.observe(this.stage);
         this.buttons.flip.addEventListener('click',()=>this.flip());
         this.buttons['zoom-in'].addEventListener('click',()=>this.setZoom(this.zoom*1.35));
         this.buttons['zoom-out'].addEventListener('click',()=>this.setZoom(this.zoom/1.35));
@@ -215,6 +219,30 @@
         this.stage.addEventListener('keydown',e=>this.keyDown(e));
         this.resizeObserver=new ResizeObserver(()=>this.resize()); this.resizeObserver.observe(this.stage);
         this.resize();
+      }
+      async loadVector(phase) {
+        const image=phase.element.querySelector('img');
+        try {
+          const response=await fetch(image.currentSrc||image.src);
+          if(!response.ok)throw new Error('SVG unavailable');
+          const xml=new DOMParser().parseFromString(await response.text(),'image/svg+xml');
+          if(xml.querySelector('parsererror')||xml.documentElement.localName!=='svg')throw new Error('Invalid SVG');
+          const svg=document.importNode(xml.documentElement,true);
+          svg.setAttribute('class','artwork');svg.setAttribute('role','img');
+          svg.setAttribute('aria-label',image.getAttribute('aria-label')||image.alt);
+          svg.setAttribute('aria-hidden',image.getAttribute('aria-hidden')||'false');
+          const geometry=document.createElementNS('http://www.w3.org/2000/svg','g');
+          // The background rect stays fixed; only the ink paths turn and zoom.
+          for(const group of [...svg.children].filter(child=>child.localName==='g'))geometry.append(group);
+          svg.append(geometry);phase.size=svg.viewBox.baseVal.width;
+          image.replaceWith(svg);phase.geometry=geometry;
+          this.section.dataset.vectorReady=String(this.phases.filter(p=>p.geometry).length);
+          this.render();
+        } catch(error) {
+          // The SVG img remains usable without inline loading. Its physical
+          // layout size changes with zoom, so it still rerenders at full size.
+          this.section.dataset.vectorFallback='true';
+        }
       }
       createNodes() {
         const layer=this.section.querySelector('.nodes');
@@ -235,17 +263,29 @@
       fit() { return this.zoom/(Math.abs(Math.cos(this.angle))+Math.abs(Math.sin(this.angle))); }
       render() {
         const s=this.fit(),cos=Math.cos(this.angle),sin=Math.sin(this.angle);
-        this.plane.style.transform=`translate(${this.pan.x}px,${this.pan.y}px) rotate(${this.angle}rad) scale(${s})`;
+        const transform=size=>`translate(${size/2+this.pan.x*size/this.width} ${size/2+this.pan.y*size/this.height}) rotate(${this.angle*180/Math.PI}) scale(${s}) translate(${-size/2} ${-size/2})`;
+        for(const phase of this.phases) {
+          if(phase.geometry)phase.geometry.setAttribute('transform',transform(phase.size));
+          else {
+            const image=phase.element.querySelector('img');
+            image.style.width=image.style.height=`${s*100}%`;
+            image.style.left=`calc(${(1-s)*50}% + ${this.pan.x}px)`;
+            image.style.top=`calc(${(1-s)*50}% + ${this.pan.y}px)`;
+            image.style.transform=`rotate(${this.angle}rad)`;
+          }
+        }
+        this.routeGeometry.setAttribute('transform',transform(1000));
         // The aligned trunk stays visible throughout. Only its terminal texture changes.
         this.crown.style.opacity=String(1-smoothstep(((1-cos)/2-.2)/.6));
         const side=cos>=0?'crown':'roots';
         if(this.section.dataset.side!==side) {
           this.orientation.textContent=side==='crown'?'冠 · 向共同起点回溯':'根 · 从起点展开';
           this.buttons.flip.setAttribute('aria-label',`${this.ordinal}翻转为${side==='crown'?'根系':'树冠'}`);
-          const crownImage=this.crown.querySelector('img');
+          const crownImage=this.crown.querySelector('.artwork');
           crownImage.setAttribute('aria-hidden',String(side!=='crown'));
-          const rootImage=this.section.querySelector('.roots img');
-          rootImage.alt=side==='roots'?`${this.ordinal}的根系，沿原来的主干与分叉展开，末梢延伸为纤细根须。`:'';
+          const rootImage=this.section.querySelector('.roots .artwork');
+          rootImage.setAttribute('role','img');rootImage.setAttribute('aria-hidden',String(side!=='roots'));
+          rootImage.setAttribute('aria-label',`${this.ordinal}的根系，沿原来的主干与分叉展开，末梢延伸为纤细根须。`);
         }
         this.section.dataset.side=side;
         this.section.dataset.angle=this.angle.toFixed(4); this.section.dataset.zoom=this.zoom.toFixed(3);
@@ -258,7 +298,7 @@
           m.button.style.visibility=px>=22&&px<=this.width-22&&py>=22&&py<=this.height-22?'visible':'hidden';
           m.button.setAttribute('aria-pressed',String(i===this.selected));
         }
-        this.buttons['zoom-in'].disabled=this.zoom>=4.5;
+        this.buttons['zoom-in'].disabled=this.zoom>=12;
         this.buttons['zoom-out'].disabled=this.zoom<=.6;
       }
       resize() {
@@ -269,7 +309,7 @@
         this.pan.x=clamp(this.pan.x,-this.width*extra,this.width*extra);
         this.pan.y=clamp(this.pan.y,-this.height*extra,this.height*extra);
       }
-      setZoom(value) {this.zoom=clamp(value,.6,4.5);this.clampPan();this.render();}
+      setZoom(value) {this.zoom=clamp(value,.6,12);this.clampPan();this.render();}
       setPanMode(value) {
         this.panMode=value;this.stage.dataset.pan=String(value);this.buttons.pan.setAttribute('aria-pressed',String(value));
         this.hint.textContent=value?'拖拽移动 · 再点「移动」恢复拖拽翻转':'拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯';
