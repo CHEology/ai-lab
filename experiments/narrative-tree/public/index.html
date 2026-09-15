@@ -33,12 +33,10 @@
     .controls button:hover { border-color: #555; background: #131313; }
     .controls button:disabled { opacity: .3; cursor: default; }
     .controls [data-action="zoom-in"], .controls [data-action="zoom-out"] { font-size: 19px; }
-    .controls [data-action="pan"][aria-pressed="true"] { border-color: #888; background: #1a1a1a; }
     .controls .flip { display: flex; align-items: center; gap: 9px; margin-left: 10px; padding: 0 15px; border-color: #555; }
     .flip svg { width: 17px; height: 17px; }
     .stage { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; isolation: isolate; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
     .stage.dragging, .stage.dragging .node { cursor: grabbing; }
-    .stage[data-pan="true"] { touch-action: none; cursor: move; }
     .plane, .phase, .artwork, .route-map, .nodes { position: absolute; inset: 0; width: 100%; height: 100%; }
     .plane { transform-origin: center; pointer-events: none; }
     .artwork { display: block; object-fit: contain; pointer-events: none; }
@@ -90,7 +88,7 @@
       <p>一个故事可以沿着一条线向前，也可以在某些时刻分岔。同一个起点，由此通向不同的经历与结局。这份构想试着把这些可能画成一棵树，让故事的分支成为可以观看、触碰和回溯的形状。</p>
       <p>在黑色的空间里，一棵庞大的树以银白细线显现。树干与枝条舒展在同一个平面，细碎的笔触聚成抽象的树冠；线条的疏密、断续与微光，留下树的纹理。每一条枝干都来自唯一的上游，分开后不再汇合；沿着任意一条路径往回走，都能回到共同的起点。</p>
       <p>当起点在上，分支向下延伸，像根系一样展开一个人的种种可能。把整棵树翻过来，同样的分叉换上枝叶，形成树冠：从分散的末端往下追溯，又会发现这些路径原来同出一人。翻转时，主干与主要分叉尽量保留原来的位置和走向，末梢的叶纹逐渐转为纤细的根须。翻转不改变故事之间的关系，却给了我们另一个理解它们的方向。</p>
-      <p>下面呈现两棵树。第一棵结合疏密银线与断续刻纹，第二棵保留更舒展的枝影与留白。直接用鼠标拖拽，就能分别在树冠与根系之间翻转；也可以放大细看，或点击节点追溯起点。具体人物、场景与结局暂时留空，让形态和观看方式先成立。</p>
+      <p>下面呈现两棵树。第一棵结合疏密银线与断续刻纹，第二棵保留更舒展的枝影与留白。直接拖拽可以移动树，滚轮或触控板捏合可以放大细看，双指滑动可以移动视野；点击翻转按钮，或按住 Alt 拖拽，可以在树冠与根系之间切换。点击节点则能追溯起点。具体人物、场景与结局暂时留空，让形态和观看方式先成立。</p>
     </article>
 
     <section class="experiment" id="silver-tree" aria-labelledby="silver-title" data-tree="silver">
@@ -99,11 +97,10 @@
         <div class="controls" role="group" aria-label="银线刻纹的观看控制">
           <button type="button" data-action="zoom-out" aria-label="缩小第一棵树">−</button>
           <button type="button" data-action="zoom-in" aria-label="放大第一棵树">＋</button>
-          <button type="button" data-action="pan" aria-label="移动第一棵树" aria-pressed="false">移动</button>
           <button type="button" class="flip" data-action="flip" aria-label="第一棵树翻转为根系"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
         </div>
       </div>
-      <div class="stage" tabindex="0" role="group" aria-label="第一棵树，拖拽翻转，左右方向键或空格键翻转，加减键缩放" data-pan="false">
+      <div class="stage" tabindex="0" role="group" aria-label="第一棵树，拖拽移动，滚轮或捏合缩放，Alt 加拖拽翻转，方向键移动，空格键翻转">
         <div class="plane">
           <div class="phase roots"><img class="artwork" src="assets/silver-roots.svg" width="1254" height="1254" alt="" draggable="false" decoding="async"></div>
           <div class="phase crown"><img class="artwork" src="assets/silver-crown.svg" width="1254" height="1254" alt="银白细线与断续刻纹组成的大树，枝条舒展，树冠疏密相间。" draggable="false" decoding="async" fetchpriority="high"></div>
@@ -111,7 +108,7 @@
         </div>
         <div class="nodes" role="group" aria-label="第一棵树的节点"></div>
       </div>
-      <div class="caption"><p class="selection" role="status">所有分岔，共同起点。</p><p class="gesture-hint">拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯</p></div>
+      <div class="caption"><p class="selection" role="status">所有分岔，共同起点。</p><p class="gesture-hint">拖拽／双指滑动移动 · 滚轮／捏合缩放 · Alt＋拖拽翻转 · 画布外滚动页面</p></div>
     </section>
 
     <section class="experiment" id="open-tree" aria-labelledby="open-title" data-tree="open">
@@ -120,11 +117,10 @@
         <div class="controls" role="group" aria-label="留白枝影的观看控制">
           <button type="button" data-action="zoom-out" aria-label="缩小第二棵树">−</button>
           <button type="button" data-action="zoom-in" aria-label="放大第二棵树">＋</button>
-          <button type="button" data-action="pan" aria-label="移动第二棵树" aria-pressed="false">移动</button>
           <button type="button" class="flip" data-action="flip" aria-label="第二棵树翻转为根系"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 8a8 8 0 0 1 14 0M19 3v5h-5M19 16a8 8 0 0 1-14 0M5 21v-5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>翻转</button>
         </div>
       </div>
-      <div class="stage" tabindex="0" role="group" aria-label="第二棵树，拖拽翻转，左右方向键或空格键翻转，加减键缩放" data-pan="false">
+      <div class="stage" tabindex="0" role="group" aria-label="第二棵树，拖拽移动，滚轮或捏合缩放，Alt 加拖拽翻转，方向键移动，空格键翻转">
         <div class="plane">
           <div class="phase roots"><img class="artwork" src="assets/open-roots.svg" width="1254" height="1254" alt="" draggable="false" decoding="async" loading="lazy"></div>
           <div class="phase crown"><img class="artwork" src="assets/open-crown.svg" width="1254" height="1254" alt="留白开阔的平面银线大树，流畅枝干间散布细小的叶状笔触。" draggable="false" decoding="async" loading="lazy"></div>
@@ -132,7 +128,7 @@
         </div>
         <div class="nodes" role="group" aria-label="第二棵树的节点"></div>
       </div>
-      <div class="caption"><p class="selection" role="status">所有分岔，共同起点。</p><p class="gesture-hint">拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯</p></div>
+      <div class="caption"><p class="selection" role="status">所有分岔，共同起点。</p><p class="gesture-hint">拖拽／双指滑动移动 · 滚轮／捏合缩放 · Alt＋拖拽翻转 · 画布外滚动页面</p></div>
     </section>
     <noscript><p>开启 JavaScript 后，可以分别翻转和放大这两棵树。</p></noscript>
 
@@ -190,8 +186,9 @@
         this.orientation=section.querySelector('.orientation'); this.selection=section.querySelector('.selection');
         this.hint=section.querySelector('.gesture-hint'); this.buttons={};
         for(const b of section.querySelectorAll('[data-action]')) this.buttons[b.dataset.action]=b;
-        this.angle=0; this.zoom=1; this.pan={x:0,y:0}; this.panMode=false;
+        this.angle=0; this.zoom=1; this.pan={x:0,y:0}; this.framed=false;
         this.selected=-1; this.drag=null; this.animation=0; this.blockClickUntil=0;
+        this.paint=0; this.wheelIntent=null; this.wheelAt=-Infinity; this.gesture=null;
         this.width=1; this.height=1; this.minZoom=.6;
         this.structure=structures[section.dataset.tree];
         this.markers=[{point:this.structure.base,label:'共同起点'},...this.structure.routes.map((r,i)=>({...r,label:`分岔 ${String(i+1).padStart(2,'0')}`}))];
@@ -207,7 +204,10 @@
         this.buttons.flip.addEventListener('click',()=>this.flip());
         this.buttons['zoom-in'].addEventListener('click',()=>this.setZoom(this.zoom*1.35));
         this.buttons['zoom-out'].addEventListener('click',()=>this.setZoom(this.zoom/1.35));
-        this.buttons.pan.addEventListener('click',()=>this.setPanMode(!this.panMode));
+        this.stage.addEventListener('wheel',e=>this.wheel(e),{passive:false});
+        this.stage.addEventListener('gesturestart',e=>this.gestureStart(e),{passive:false});
+        this.stage.addEventListener('gesturechange',e=>this.gestureChange(e),{passive:false});
+        this.stage.addEventListener('gestureend',e=>{e.preventDefault();this.gesture=null;},{passive:false});
         this.stage.addEventListener('pointerdown',e=>this.pointerDown(e));
         this.stage.addEventListener('pointermove',e=>this.pointerMove(e));
         this.stage.addEventListener('pointerup',e=>this.pointerEnd(e,false));
@@ -303,8 +303,10 @@
           m.button.setAttribute('aria-pressed',String(i===this.selected));
         }
         this.buttons['zoom-in'].disabled=this.zoom>=12;
-        this.buttons['zoom-out'].disabled=this.atMinimum();
-        this.buttons.pan.disabled=this.atMinimum();
+        this.buttons['zoom-out'].disabled=this.atMinimum()&&this.framed;
+      }
+      queueRender() {
+        if(!this.paint)this.paint=requestAnimationFrame(()=>{this.paint=0;this.render();});
       }
       atMinimum() {return this.zoom<=this.minZoom+.0001;}
       resize() {
@@ -314,21 +316,64 @@
         // Reserve the rotating square's diagonal, so even a mid-turn tree fits.
         this.minZoom=Math.min(.6,available/(this.width*Math.SQRT2));
         this.zoom=wasMinimum?this.minZoom:clamp(this.zoom,this.minZoom,12);
-        this.clampPan();this.render();
-        if(wasMinimum&&activeTree===this)this.frameMinimum(false);
-      }
-      clampPan() {
-        if(this.atMinimum()){this.pan={x:0,y:0};return;}
-        const extra=Math.max(0,this.zoom-1)/2+.15;
-        this.pan.x=clamp(this.pan.x,-this.width*extra,this.width*extra);
-        this.pan.y=clamp(this.pan.y,-this.height*extra,this.height*extra);
+        this.render();
+        if(wasMinimum&&this.framed&&activeTree===this)this.frameMinimum(false);
       }
       setZoom(value) {
         activeTree=this;
-        this.zoom=clamp(value,this.minZoom,12);
-        if(this.atMinimum())this.setPanMode(false);
-        this.clampPan();this.render();
-        if(this.atMinimum())this.frameMinimum(true);
+        if(value<=this.minZoom) {
+          this.zoom=this.minZoom;this.pan={x:0,y:0};this.framed=true;
+          this.render();this.frameMinimum(true);
+        } else this.zoomAt(value,this.visibleCenter());
+      }
+      visibleCenter() {
+        const b=this.stage.getBoundingClientRect(),top=Math.max(b.top,this.toolbar.getBoundingClientRect().bottom);
+        const bottom=Math.min(b.bottom,window.innerHeight);
+        return {x:this.width/2,y:bottom>top?(top+bottom)/2-b.top:this.height/2};
+      }
+      pointerPoint(e) {
+        const b=this.stage.getBoundingClientRect();
+        return {x:e.clientX-b.left,y:e.clientY-b.top};
+      }
+      zoomAt(value,point) {
+        const next=clamp(value,this.minZoom,12),ratio=next/this.zoom;
+        if(next===this.zoom)return;
+        this.pan.x=point.x-this.width/2-(point.x-this.width/2-this.pan.x)*ratio;
+        this.pan.y=point.y-this.height/2-(point.y-this.height/2-this.pan.y)*ratio;
+        this.zoom=next;this.framed=false;this.queueRender();
+      }
+      moveBy(x,y) {
+        this.pan.x+=x;this.pan.y+=y;this.framed=false;this.queueRender();
+      }
+      wheel(e) {
+        if(this.drag||!e.cancelable)return;
+        e.preventDefault();activeTree=this;
+        if(this.gesture)return;
+        const now=performance.now(),unit=e.deltaMode===1?16:e.deltaMode===2?this.height:1;
+        const dx=e.deltaX*unit,dy=e.deltaY*unit;
+        // WheelEvent has no device identity. Lock a continuous pixel gesture
+        // to panning; discrete wheel steps zoom. Ctrl always forces zoom and
+        // Shift always forces pan, including high-resolution mouse wheels.
+        if(!this.wheelIntent||now-this.wheelAt>180) {
+          this.wheelIntent=e.deltaMode!==0||(!e.deltaX&&Number.isInteger(e.deltaY)&&Math.abs(e.deltaY)>=50)?'zoom':'pan';
+        }
+        if(e.deltaX)this.wheelIntent='pan';
+        this.wheelAt=now;
+        if(e.ctrlKey||e.metaKey||(!e.shiftKey&&this.wheelIntent==='zoom')) {
+          const speed=e.ctrlKey?.01:.0025;
+          this.zoomAt(this.zoom*Math.exp(clamp(-dy*speed,-.5,.5)),this.pointerPoint(e));
+        } else this.moveBy(-dx,-dy);
+      }
+      gestureStart(e) {
+        e.preventDefault();activeTree=this;
+        this.gesture={scale:1};
+      }
+      gestureChange(e) {
+        if(!this.gesture||!Number.isFinite(e.scale)||e.scale<=0)return;
+        e.preventDefault();
+        const point=Number.isFinite(e.clientX)&&Number.isFinite(e.clientY)?this.pointerPoint(e):this.visibleCenter();
+        this.zoomAt(this.zoom*e.scale/this.gesture.scale,point);
+        this.gesture.scale=e.scale;
       }
       frameMinimum(animate) {
         const stage=this.stage.getBoundingClientRect(),section=this.section.getBoundingClientRect();
@@ -338,10 +383,6 @@
         // the visible area below the sticky toolbar, not in the off-screen page.
         const top=window.scrollY+Math.max(section.top,stage.top+stage.height/2-center);
         window.scrollTo({top,behavior:animate&&!motion.matches?'smooth':'instant'});
-      }
-      setPanMode(value) {
-        this.panMode=value;this.stage.dataset.pan=String(value);this.buttons.pan.setAttribute('aria-pressed',String(value));
-        this.hint.textContent=value?'拖拽移动 · 再点「移动」恢复拖拽翻转':'拖拽翻转 · Shift＋拖拽移动 · 点击节点追溯';
       }
       settle(target,duration=1000) {
         cancelAnimationFrame(this.animation);const from=this.angle;
@@ -363,35 +404,37 @@
       flip(direction=1) {
         if(this.animation||this.drag)return;
         activeTree=this;
-        if(this.atMinimum())this.frameMinimum(true);
+        if(this.atMinimum()&&this.framed)this.frameMinimum(true);
         this.settle((Math.round(this.angle/Math.PI)+direction)*Math.PI,1600);
       }
       pointerDown(e) {
-        if(e.button!==0 || this.drag || this.animation || !e.isPrimary)return;
+        if((e.button!==0&&e.button!==1)||this.drag||!e.isPrimary)return;
+        if(e.altKey&&this.animation)return;
+        if(e.button===1)e.preventDefault();
         this.blockClickUntil=0;
         const button=e.target.closest('button');if(!button)this.stage.focus({preventScroll:true});
         this.drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:this.angle,rest:Math.round(this.angle/Math.PI)*Math.PI,
           px:this.pan.x,py:this.pan.y,moved:false,axis:null,travel:clamp(this.width*.65,300,680),
-          mode:this.panMode||e.shiftKey?'pan':'turn',touch:e.pointerType==='touch'};
+          mode:e.altKey?'turn':'pan',touch:e.pointerType==='touch'};
         (button||this.stage).setPointerCapture(e.pointerId);
       }
       pointerMove(e) {
         const d=this.drag;if(!d||d.id!==e.pointerId)return;
-        const dx=e.clientX-d.x,dy=e.clientY-d.y,deadZone=d.mode==='pan'?7:12;
+        const dx=e.clientX-d.x,dy=e.clientY-d.y,deadZone=d.mode==='pan'?3:12;
         if(!d.moved&&Math.hypot(dx,dy)<deadZone)return;
         if(!d.axis) {
           // Normal vertical touch gestures continue scrolling the long document.
-          if(d.touch&&d.mode==='turn'&&Math.abs(dy)>Math.abs(dx))return;
+          if(d.touch&&Math.abs(dy)>Math.abs(dx))return;
           d.axis=d.touch?'x':Math.abs(dx)>=Math.abs(dy)?'x':'y';
         }
         d.moved=true;this.stage.classList.add('dragging');
-        if(d.mode==='pan') {this.pan.x=d.px+dx;this.pan.y=d.py+dy;this.clampPan();}
+        if(d.mode==='pan') {this.pan.x=d.px+dx;this.pan.y=d.py+dy;this.framed=false;}
         else {
           const distance=d.axis==='x'?dx:dy;
           const progress=Math.sign(distance)*Math.max(0,Math.abs(distance)-deadZone)/d.travel;
           this.angle=d.start+clamp(progress,-1,1)*Math.PI;
         }
-        this.render();
+        this.queueRender();
       }
       pointerEnd(e,cancelled) {
         const d=this.drag;if(!d||d.id!==e.pointerId)return;
@@ -407,9 +450,10 @@
       }
       keyDown(e) {
         if(e.target!==this.stage)return;
-        const actions={'ArrowLeft':()=>this.flip(-1),'ArrowRight':()=>this.flip(1),' ':()=>this.flip(),'Enter':()=>this.flip(),
+        const actions={'ArrowLeft':()=>e.altKey?this.flip(-1):this.moveBy(-48,0),'ArrowRight':()=>e.altKey?this.flip(1):this.moveBy(48,0),
+          'ArrowUp':()=>this.moveBy(0,-48),'ArrowDown':()=>this.moveBy(0,48),' ':()=>this.flip(),'Enter':()=>this.flip(),
           '+':()=>this.setZoom(this.zoom*1.35),'=':()=>this.setZoom(this.zoom*1.35),'-':()=>this.setZoom(this.zoom/1.35),
-          'Home':()=>this.setZoom(this.minZoom),'Escape':()=>{this.select(-1);this.setPanMode(false);}};
+          'Home':()=>this.setZoom(this.minZoom),'Escape':()=>this.select(-1)};
         if(actions[e.key]){e.preventDefault();actions[e.key]();}
       }
     }

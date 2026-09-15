@@ -39,6 +39,16 @@
 
 浏览器检查了 1280 × 720、390 × 844 以及从窄屏切换为 793 × 500 的布局：完整树形位于工具栏与窗口底部之间，窄屏无横向溢出。行为测试覆盖最小倍率、清除平移、重新放大，以及窗口变化导致页面重排时仍保持当前树形完整可见。
 
+## 2026-09-14：自由浏览修订
+
+按用户的新要求，将普通拖拽改为直接平移，移除「移动」模式按钮与平移边界，最小倍率也能移动，松手不吸回原位。此前拖拽翻转改为 Alt＋拖拽，原有翻转按钮和缓动保留。旋转播放时仍可拖动与缩放；方向键用于移动，Alt＋左右键、空格或 Enter 用于翻转。
+
+滚轮步进缩放、触控板连续双指滑动平移、捏合缩放；缩放固定鼠标所在的画面点，按钮缩放固定当前可见区域的中心。连续输入合并到动画帧绘制，仍直接变换 SVG 路径。手势缩到下限不强制滚动页面或重置位置；「−」和 Home 可恢复适应窗口的全景视图。画布外的滚动仍用于浏览长页面。
+
+浏览器没有可靠的 WheelEvent 设备类型字段，使用步进与连续像素事件的节奏区分常见滚轮和触控板；连续手势中锁定平移，避免加速途中切成缩放。Ctrl／Command＋滚动显式缩放，Shift＋滚动显式平移，作为高精度滚轮等设备的补充操作。另接入 Safari GestureEvent，并避免与 wheel 捏合重复缩放。事件依据：[MDN wheel](https://developer.mozilla.org/en-US/docs/Web/API/Element/wheel_event)、[Apple GestureEvent](https://developer.apple.com/documentation/webkitjs/gestureevent)。
+
+浏览器实测两棵树的直接拖动、最小倍率移动、鼠标滚轮缩放及画布外滚动：画布操作期间页面 scrollY 保持不变，两棵树状态独立。临时集成页通过实际 DOM 事件监听器模拟连续双指、Ctrl 捏合和 Safari 手势序列，平移与缩放结果符合预期，默认浏览器动作被正确阻止；这是事件级兼容验证，不冒称真实触控板或 Safari 硬件测试。临时页面由正式构建清除，不发布。行为测试另外覆盖鼠标锚点不漂移、密集事件合并绘制、最小倍率不锁定、普通拖动不翻面、旋转期间仍可移动。
+
 ## 第一棵树的融合提示词
 
 Edit the first reference tree into the FINAL flat white-line tree illustration for a website. Reference image 1 is the exact composition and tree anatomy to preserve. Reference image 2 supplies only its fine distressed broken engraved line texture. Fuse the AIRY, spacious delicate branching of image 1 with the refined interrupted bark strokes and fine textured crown marks of image 2. Keep the same broad grand mature-tree proportions and silhouette as image 1, no thicker trunk. Keep the original black gaps and elegant naturally asymmetric branches. A very subtle luminous white ink edge, no atmospheric glow. Strictly TWO DIMENSIONAL white line drawing on an opaque pure black background. Flat line grain, no modeled bark or cylindrical shading, no realistic metal, no photographic foliage. Foliage remains tiny abstract curved and broken marks, not larger literal leaf icons. No 3D, no gradients, no gray fill or solid foliage masses. Whole tree fits in the square image, centered exactly like the first reference. No text, frame or extra objects. Preserve every major branch junction and its position from reference 1. Fine detailed final artwork.
