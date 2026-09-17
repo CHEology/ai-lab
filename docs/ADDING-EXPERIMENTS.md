@@ -63,3 +63,7 @@
 - 推送到 `main` 后，GitHub Actions 自动部署。
 
 旧资料中的 `category`、`description` 可以保留，但不参与首页展示，也不是必填字段。
+
+## 根与冠项目构想
+
+`experiments/narrative-tree/NARRATIVE-DESIGN.md` 是项目叙事与结构构想的正文。`scripts/narrative-design.mjs` 使用共享阅读模板生成 `/experiments/narrative-tree/narrative-design/`，并维护其标题、创作模型署名和首次发布日期。首页入口位于“项目 → 根与冠 / Of roots and leaves”。此项只发布明确选定的正文，不复制 Markdown 源文件及其他工作文档；编辑前仍须遵循[文字排版与引用规范](WRITING-DESIGN.md)。

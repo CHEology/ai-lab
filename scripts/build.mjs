@@ -2,6 +2,7 @@ import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promi
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { readWriting, writingTree, buildWriting } from './writing.mjs';
+import { buildNarrativeDesign, narrativeDesign } from './narrative-design.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, 'dist');
@@ -88,6 +89,7 @@ const projectsTree = rootsAndLeaves ? `<ul class="directory-tree" aria-label="�
         <summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">根与冠 / Of roots and leaves</span></summary>
         <ul class="directory-children">
           <li class="directory-file"><a href="${escape(rootsAndLeaves.href)}">${fileIcon}<span>${escape(rootsAndLeaves.title)}</span></a></li>
+          <li class="directory-file"><a href="./${narrativeDesign.route}">${fileIcon}<span>${escape(narrativeDesign.title)}</span></a></li>
         </ul>
       </details></li>
     </ul>
@@ -111,5 +113,6 @@ for (const project of projects) {
 }
 await writeFile(path.join(output, 'index.html'), template.replace('<!-- CATALOG -->', () => catalog));
 await buildWriting(root, output, writing);
+if (rootsAndLeaves?.publicDirectory) await buildNarrativeDesign(root, output);
 await writeFile(path.join(output, '.nojekyll'), '');
 console.log(`Built ai-lab: ${projects.length} experiment(s), ${writing.entries.length} writing page(s) → dist/`);
