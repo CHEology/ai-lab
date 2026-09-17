@@ -79,7 +79,21 @@ const ideasTree = `<ul class="directory-tree" aria-label="想法目录">
     </ul>
   </details></li>
 </ul>`;
-const catalog = `<div class="catalogue">${writingTree(writing, { home: true })}${ideasTree}<ul class="project-list" aria-label="其他作品">${projects.filter(project => !project.folder).map((project) =>
+const rootsAndLeaves = projects.find(project => project.slug === 'narrative-tree');
+const projectsTree = rootsAndLeaves ? `<ul class="directory-tree" aria-label="项目目录">
+  <li><details class="directory-folder" open>
+    <summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">项目</span></summary>
+    <ul class="directory-children">
+      <li><details class="directory-folder" open>
+        <summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">根与冠 / Of roots and leaves</span></summary>
+        <ul class="directory-children">
+          <li class="directory-file"><a href="${escape(rootsAndLeaves.href)}">${fileIcon}<span>${escape(rootsAndLeaves.title)}</span></a></li>
+        </ul>
+      </details></li>
+    </ul>
+  </details></li>
+</ul>` : '';
+const catalog = `<div class="catalogue">${projectsTree}${writingTree(writing, { home: true })}${ideasTree}<ul class="project-list" aria-label="其他作品">${projects.filter(project => !project.folder).map((project) =>
   `<li><a href="${escape(project.href)}">${escape(project.title)}</a></li>`
 ).join('')}</ul></div>`;
 
