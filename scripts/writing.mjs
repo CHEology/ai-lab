@@ -30,6 +30,7 @@ export async function readWriting(root) {
   for (const entry of data.entries) {
     required(entry.id, 'id'); required(entry.title, 'title');
     if (entry.responseTitle !== undefined) required(entry.responseTitle, 'responseTitle');
+    if (entry.directoryTitle !== undefined) required(entry.directoryTitle, 'directoryTitle');
     if (entry.toc !== undefined && typeof entry.toc !== 'boolean') throw new Error('toc 必须是布尔值');
     if (ids.has(entry.id)) throw new Error('文字 ID 重复'); ids.add(entry.id);
     if (!groups.has(entry.collection)) throw new Error(`${entry.id} 的分组不存在`);
@@ -56,7 +57,9 @@ export async function readWriting(root) {
       if (!bodyPath.startsWith(bodyRoot + path.sep)) throw new Error('正文路径越界');
       const markdown = await readFile(bodyPath, 'utf8');
       if (!markdown.trim()) throw new Error('已发布文字不能是空正文');
-      body = renderWriting(markdown, { toc: entry.toc });
+      body = renderWriting(markdown, { toc: entry.toc })
+        .replace(/<table>/g, '<div class="project-table" tabindex="0" role="region" aria-label="对照表，可横向滚动"><table>')
+        .replace(/<\/table>/g, '</table></div>');
     } else if (entry.body || entry.byline || entry.published) {
       throw new Error('待写页面不能携带正文、署名或发布日期');
     }
@@ -66,7 +69,7 @@ export async function readWriting(root) {
 }
 
 function fileRow(entry, prefix) {
-  return `<li class="directory-file"><a href="${escape(prefix + entry.href)}">${fileIcon}<span>${escape(entry.title)}</span></a>${entry.status === 'pending' ? '<span class="directory-state">待写</span>' : ''}</li>`;
+  return `<li class="directory-file"><a href="${escape(prefix + entry.href)}">${fileIcon}<span>${escape(entry.directoryTitle ?? entry.title)}</span></a>${entry.status === 'pending' ? '<span class="directory-state">待写</span>' : ''}</li>`;
 }
 
 export function writingTree(data, { prefix = './', home = false } = {}) {

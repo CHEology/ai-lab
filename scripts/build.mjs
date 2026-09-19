@@ -81,6 +81,7 @@ const ideasTree = `<ul class="directory-tree" aria-label="想法目录">
   </details></li>
 </ul>`;
 const rootsAndLeaves = projects.find(project => project.slug === 'narrative-tree');
+const rootsAndLeavesNotes = writing.entries.find(entry => entry.id === 'bluenote-roots-notes-0919');
 const projectsTree = rootsAndLeaves ? `<ul class="directory-tree" aria-label="项目目录">
   <li><details class="directory-folder" open>
     <summary><span class="directory-chevron" aria-hidden="true"></span>${folderIcon}<span class="folder-title">项目</span></summary>
@@ -90,6 +91,7 @@ const projectsTree = rootsAndLeaves ? `<ul class="directory-tree" aria-label="�
         <ul class="directory-children">
           <li class="directory-file"><a href="${escape(rootsAndLeaves.href)}">${fileIcon}<span>${escape(rootsAndLeaves.title)}</span></a></li>
           <li class="directory-file"><a href="./${narrativeDesign.route}">${fileIcon}<span>${escape(narrativeDesign.title)}</span></a></li>
+          ${rootsAndLeavesNotes ? `<li class="directory-file"><a href="./${escape(rootsAndLeavesNotes.href)}">${fileIcon}<span>${escape(rootsAndLeavesNotes.directoryTitle ?? rootsAndLeavesNotes.title)}</span></a></li>` : ''}
         </ul>
       </details></li>
     </ul>

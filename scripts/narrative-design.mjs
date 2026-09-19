@@ -4,7 +4,7 @@ import { renderWriting } from './markdown.mjs';
 import { escape } from './writing.mjs';
 
 export const narrativeDesign = {
-  title: '项目叙事与结构构想',
+  title: '根与冠 整理稿 0916',
   route: 'experiments/narrative-tree/narrative-design/',
   byline: 'GPT-6',
   published: '2026-09-16',

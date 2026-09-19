@@ -4,7 +4,7 @@
 
 在 `writing/entries.json` 的 `collections` 添加有实际作品的分组，再在 `entries` 登记条目。数组顺序就是目录顺序。每个条目提供唯一 `id`、`title`、`collection` 和 `status`。回应还需要 `source.title` 与 `source.url`，标题必须相同。
 
-回应有自己的标题时，填写可选的 `responseTitle`，它用于阅读页 H1 和浏览器标题。`title` 仍保留原文标题，供目录与固定 URL 使用；不把回应标题重复写进 Markdown 正文。
+回应有自己的标题时，填写可选的 `responseTitle`，它用于阅读页 H1 和浏览器标题。`title` 仍保留原文标题，供固定 URL 与默认目录名称使用；用户明确指定系列标题时，可用 `directoryTitle` 覆盖目录显示名称而不改变地址；不把回应标题重复写进 Markdown 正文。
 
 长文在作者允许时可填写 `toc: true`：正文前生成默认收起的简洁目录，只列主要 H2。公式用 `$...$`，独立公式起止 `$$` 各占一行；构建器输出原生 MathML。具体格式见文字规范第 4.3–4.4 节。
 

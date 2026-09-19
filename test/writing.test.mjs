@@ -14,7 +14,7 @@ async function fixture(edit) {
   const data = JSON.parse(await readFile(path.join(root, 'writing/entries.json'), 'utf8'));
   for (const entry of data.entries) {
     entry.status = 'pending';
-    for (const key of ['body', 'byline', 'published', 'responseTitle']) delete entry[key];
+    for (const key of ['body', 'byline', 'published', 'responseTitle', 'directoryTitle']) delete entry[key];
   }
   await edit(data, dir);
   await writeFile(path.join(dir, 'writing/entries.json'), JSON.stringify(data));
@@ -47,7 +47,7 @@ test('drafts are omitted; publishing requires a nonempty selected body and actua
   });
   try {
     const data = await readWriting(f.dir);
-    assert.equal(data.entries.length, 3); assert(!writingTree(data).includes('布涅星'));
+    assert.equal(data.entries.length, 4); assert(!writingTree(data).includes('布涅星'));
     assert(data.entries[0].bodyHTML.includes('<strong>text</strong>'));
     const output = path.join(f.dir, 'out'); await buildWriting(f.dir, output, data);
     const html = await readFile(path.join(output, data.entries[0].diskPath, 'index.html'), 'utf8');

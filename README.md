@@ -23,7 +23,7 @@ npm run check  # 校验作品资料并构建到 dist/
 
 ## 添加作品
 
-编辑文字前先读 [文字排版与引用规范](docs/WRITING-DESIGN.md)（agent / AI 必读），操作步骤见 [添加文字](docs/ADDING-WRITING.md)，全站视觉见 [设计规范](docs/DESIGN.md)。文字页采用原标题路径，例如 `/ai-lab/writing/bluenote/修图/`。
+编辑文字前先读 [文字排版与引用规范](docs/WRITING-DESIGN.md)（agent / AI 必读），操作步骤见 [添加文字](docs/ADDING-WRITING.md)，全站视觉见 [设计规范](docs/DESIGN.md)。文字页采用原标题路径，例如 `/ai-lab/writing/bluenote/修图/`。明确指定系列标题时可用 `directoryTitle` 设置目录名称，保留原标题地址。
 
 已完成的 AI 文章按 `模型名称 · YYYY-MM-DD` 显示内容创作模型和首次发布日期。最后交付的 agent 应依据用户确认或可靠创作记录自行填写模型名称；无法确认时询问用户，不默认省略，也不把仅做排版或发布的模型当作创作模型。只有用户明确要求不署名时才省略；待写页仍不署名。
 
